@@ -1,0 +1,16 @@
+Flask
+Flask-Cors
+PyMySQL
+
+# LangChain + intégration Ollama
+langchain
+langchain-ollama
+langchain-community
+
+# FAISS pour l’index sémantique
+faiss-cpu
+
+# Embeddings & LLM
+sentence-transformers
+transformers
+torch
