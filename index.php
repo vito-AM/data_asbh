@@ -16,7 +16,7 @@ require_once 'auth.php'; ?>
       theme: {
         extend: {
           colors: {
-            primary:      '#292E68',  // bleu ASBH
+            primary:      '#292E68',
             primaryDark:  '#1f2355',
             danger:       '#A00E0F',
             dangerDark:   '#880c0d',
@@ -35,7 +35,7 @@ require_once 'auth.php'; ?>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Bebas+Neue&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
 </head>
 
-<body class="font-sans text-gray-900">
+<body class="font-sans text-gray-900 text-lg md:text-xl">
 
   <?php include 'sidebar.php'; ?>
 
@@ -48,27 +48,25 @@ require_once 'auth.php'; ?>
 
   <!-- contenu -->
   <main class="h-screen flex items-center justify-center ml-0 md:ml-48">
-  <div class="text-center max-w-2xl px-6 space-y-10">
+    <div class="text-center max-w-2xl px-6 space-y-10">
 
-    <!-- titre -->
-    <h1 class="font-title text-5xl uppercase tracking-wide text-white px-6 py-4 rounded-md">
-      DAT'ASBH
-    </h1>
+      <!-- titre -->
+      <h1 class="font-title text-6xl uppercase tracking-wide text-white px-6 py-4 rounded-md">
+        DAT'ASBH
+      </h1>
 
-    <p class="text-lg leading-relaxed text-white">
-      Bienvenue sur la plateforme d’analyse des performances de l’Association
-      Sportive Béziers Hérault&nbsp;!<br>
-      Explorez les statistiques des joueurs, les résultats des matchs,
-      comparez les face-à-face et importez vos propres données CSV.
-    </p>
+      <p class="leading-relaxed text-white">
+        Bienvenue sur la plateforme d’analyse des performances de l’équipe Élite Crabos de l’Association Sportive Béziers Hérault ! <br><br>
+        Accédez aux statistiques détaillées des joueurs, consultez les résultats des matchs, comparez les performances en face-à-face et importez vos propres données au format CSV pour une analyse personnalisée.
+      </p>
 
-    <footer class="text-sm text-white pt-8">
-      © <?=date('Y')?> ASBH – Tous droits réservés | 
-      <a href="aide.php" class="underline hover:text-gray-100">Aide & crédits</a>
-    </footer>
+      <footer class="text-base text-white pt-8">
+        © <?=date('Y')?> ASBH – Tous droits réservés | 
+        <a href="aide.php" class="underline hover:text-gray-100">Aide & crédits</a>
+      </footer>
 
-  </div>
-</main>
+    </div>
+  </main>
 
 </body>
 </html>

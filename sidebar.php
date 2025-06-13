@@ -42,7 +42,7 @@
      class="flex-1 flex items-center justify-center w-full py-3 text-lg text-center rounded-xl
             hover:bg-black/20 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200
             <?= $current === 'import.php' ? 'bg-white/30 font-bold' : '' ?>">
-    CSV
+    IMPORTER FICHIERS
   </a>
 
   <a href="templates/chatbot.html"

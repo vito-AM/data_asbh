@@ -548,5 +548,4 @@ else:
     output_file3 = latest_input3.replace('.xlsx', '_modifie.xlsx')
 
     print(f"🔄 Traitement du fichier le plus récent : {latest_input3}")
->>>>>>> 6e3e7308c9e0a3cfb3ee5e373b077ed04762fa58
     clean_excel_columns3(latest_input3, output_file3)

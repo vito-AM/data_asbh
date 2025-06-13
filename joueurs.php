@@ -1,9 +1,7 @@
 <?php
+session_start();
 require_once 'db.php';
 require_once 'auth.php';
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 $bdd = getBD();
 
 // Lecture du filtre passé en GET (valeurs possibles : 'tout', 'actif', 'inactif')
@@ -67,8 +65,96 @@ $current  = basename($_SERVER['PHP_SELF']);
 </head>
 
 <body class="bg-gradient-to-br from-[#A00E0F] via-[#5e0000] to-black text-white font-sans min-h-screen">
-<?php include 'sidebar.php'; ?>
+<?php include 'sidebar.php'; 
+if (!empty($_SESSION['toast'])): 
+    $toast = $_SESSION['toast'];
+    $toastType = $toast['type'] ?? 'success';
+    $toastMessage = $toast['message'] ?? '';
+    
+    // Définir les classes CSS selon le type
+    $toastClasses = [
+        'success' => 'bg-green-500 border-green-400',
+        'error' => 'bg-red-500 border-red-400',
+        'warning' => 'bg-yellow-500 border-yellow-400',
+        'info' => 'bg-blue-500 border-blue-400'
+    ];
+    
+    $toastClass = $toastClasses[$toastType] ?? $toastClasses['success'];
+    unset($_SESSION['toast']);
+?>
+    <!-- Toast fixe qui ne déplace pas le contenu -->
+    <div id="toast" 
+         class="fixed top-4 right-4 z-50 <?= $toastClass ?> text-white px-6 py-3 rounded-lg shadow-lg border-l-4 transform transition-all duration-300 ease-in-out translate-x-full opacity-0"
+         style="min-width: 300px;">
+        <div class="flex items-center justify-between">
+            <span class="font-medium"><?= htmlspecialchars($toastMessage) ?></span>
+            <button onclick="closeToast()" class="ml-4 text-white hover:text-gray-200 focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Barre de progression -->
+        <div class="mt-2 w-full bg-white/20 rounded-full h-1">
+            <div id="toast-progress" class="bg-white h-1 rounded-full transition-all duration-100 ease-linear" style="width: 100%"></div>
+        </div>
+    </div>
+<?php endif; ?>
 
+<script>
+// Script pour gérer le toast
+document.addEventListener('DOMContentLoaded', function() {
+    const toast = document.getElementById('toast');
+    const progress = document.getElementById('toast-progress');
+    
+    if (toast) {
+        // Animation d'apparition
+        setTimeout(() => {
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            toast.classList.add('translate-x-0', 'opacity-100');
+        }, 100);
+        
+        // Barre de progression
+        let width = 100;
+        const duration = 2000; // 2 secondes
+        const interval = 50; // Update toutes les 50ms
+        const decrement = (100 / duration) * interval;
+        
+        const progressTimer = setInterval(() => {
+            width -= decrement;
+            if (progress) {
+                progress.style.width = width + '%';
+            }
+            
+            if (width <= 0) {
+                clearInterval(progressTimer);
+                closeToast();
+            }
+        }, interval);
+        
+        // Pause la barre de progression au survol
+        toast.addEventListener('mouseenter', () => {
+            clearInterval(progressTimer);
+            if (progress) progress.style.animationPlayState = 'paused';
+        });
+        
+        // Reprend la barre de progression
+        toast.addEventListener('mouseleave', () => {
+            if (progress) progress.style.animationPlayState = 'running';
+        });
+    }
+});
+
+function closeToast() {
+    const toast = document.getElementById('toast');
+    if (toast) {
+        toast.classList.add('translate-x-full', 'opacity-0');
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }
+}
+</script>
 <!-- ╭─────────────────── BARRE TOP ───────────────────╮ -->
 <header
   class="ml-0 md:ml-48 sticky top-0 z-10 w-[calc(100%-12rem)]
@@ -151,6 +237,7 @@ $current  = basename($_SERVER['PHP_SELF']);
 
   </div>
 </header>
+
 
 <!-- ╭─────────────────── GRILLE ─────────────────────╮ -->
 <main class="ml-0 md:ml-48 p-6">

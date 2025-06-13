@@ -57,30 +57,48 @@ require_once 'auth.php';
         d’analyser les détails des matchs, de comparer plusieurs profils et même d’importer vos propres données.
       </p>
       <ul class="list-disc list-inside text-white/90 space-y-1">
-        <li>📊 <strong>Joueurs</strong> : fiches individuelles avec données et indicateurs clés.</li>
-        <li>🏉 <strong>Matchs</strong> : détails et statistiques des rencontres passées.</li>
-        <li>📈 <strong>Comparer</strong> : comparaison de deux ou plusieurs joueurs côte à côte.</li>
-        <li>📁 <strong>Importer</strong> : ajout de données personnalisées au format CSV.</li>
+        <li><strong>Joueurs</strong> : fiches individuelles avec données et indicateurs clés.</li>
+        <li><strong>Matchs</strong> : détails et statistiques des rencontres passées.</li>
+        <li><strong>Face à face</strong> : comparaison de deux ou plusieurs joueurs côte à côte.</li>
+        <li><strong>Importer</strong> : ajout de données personnalisées au format CSV.</li>
       </ul>
     </section>
 
     <!-- Section Crédits -->
-    <section class="space-y-3 pt-6 border-t border-white/20">
-      <h2 class="text-xl font-semibold text-[#A00E0F]">Crédits</h2>
-      <p>
-        Ce projet a été réalisé dans le cadre d’un exercice universitaire en collaboration avec l’ASBH.
-      </p>
-      <ul class="list-disc list-inside text-white/90 space-y-1">
-        <li class="flex items-center gap-3">
-          Design & Développement : <strong>L3 MIASHS – Université Paul Valéry</strong>
-          <img src="images/paulva.png" alt="Logo Université Paul Valéry" class="h-12">
-        </li>
-        <li class="flex items-center gap-3">
-          Images & Logos : <strong>Association Sportive Béziers Hérault</strong>
-          <img src="images/logo_asbh.png" alt="Logo ASBH" class="h-10">
-        </li>
-      </ul>
-    </section>
+    <section class="space-y-4 pt-6 border-t border-white/20">
+  <h2 class="text-2xl font-semibold text-[#A00E0F]">Crédits</h2>
+  <p class="text-white/90">
+    Ce projet a été réalisé dans le cadre d’un stage au sein de <strong>DELL Technologies</strong> par des étudiants de <strong>L3 MIASHS – Université Paul Valéry</strong>, en collaboration avec l’<strong>Association Sportive Béziers Hérault</strong>.
+    Il s’inscrit dans un partenariat visant à exploiter les données de performance pour l’équipe Élite Crabos.
+  </p>
+  <ul class="list-disc list-inside text-white/90 space-y-2">
+    <li class="flex items-center gap-3">
+      Partenaires : 
+      <strong>DELL Technologies</strong>
+      <img src="images/dell.png" alt="Logo DELL" class="h-10">
+      <strong>ASBH</strong>
+      <img src="images/logo_asbh.png" alt="Logo ASBH" class="h-10">
+    </li>
+    <li class="flex items-center gap-3">
+      Encadrement pédagogique :
+      <strong>Université Paul Valéry – L3 MIASHS</strong>
+      <img src="images/paulva.png" alt="Logo Université Paul Valéry" class="h-12">
+    </li>
+  </ul>
+</section>
+
+<section class="space-y-2 pt-6 border-t border-white/20">
+  <h2 class="text-2xl font-semibold text-[#A00E0F]">Contact</h2>
+  <p class="text-white/90">
+    Pour toute question ou suggestion, vous pouvez contacter :
+  </p>
+  <ul class="text-white/90 space-y-1">
+    <li><a href="mailto:aya.toukdaoui@etu.univ-montp3.fr" class="underline hover:text-white">aya.toukdaoui@etu.univ-montp3.fr</a></li>
+    <li><a href="mailto:hugo.marchionni@etu.univ-montp3.fr" class="underline hover:text-white">hugo.marchionni@etu.univ-montp3.fr</a></li>
+    <li><a href="mailto:manon.stingre@etu.univ-montp3.fr" class="underline hover:text-white">manon.stingre@etu.univ-montp3.fr</a></li>
+  </ul>
+</section>
+
 
     <!-- Bouton retour -->
     <div class="text-center pt-6">

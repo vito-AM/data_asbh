@@ -17,9 +17,15 @@ if (!$id) {
 // Suppression du joueur
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer'])) {
   $pdo->prepare("DELETE FROM joueur WHERE id_joueur = ?")->execute([$id]);
+  $_SESSION['toast'] = [
+      'message' => 'Joueur supprimé avec succès !',
+      'type' => 'error' 
+  ];
   header('Location: joueurs.php');
   exit;
 }
+
+
 
 // Récupération du joueur
 $sql = "

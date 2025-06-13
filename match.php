@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once 'db.php';
-require_once 'auth.php';
 $pdo = getBD();
 
 // 1. Vérification de l'ID
@@ -21,6 +20,9 @@ SELECT
     m.date,
     m.journee,
     m.competition,
+    m.temps_effectif_total,
+    m.possession_mt_1_total,
+    m.possession_mt_2_total,
     s.id_equipe,
     s.essais,
     s.transformations,
@@ -100,94 +102,104 @@ foreach ($pointsParAction as $row) {
     ];
 }
 
-$sqlTemps = "
-SELECT temps_effectif_beziers, temps_effectif_equipe_adverse, temps_effectif_total
-FROM temps_effectif
-JOIN `match` m ON m.id_temps_effectif = temps_effectif.id_temps_effectif
-WHERE m.id_match = :id
-";
+$sqlTemps = "SELECT te.temps_effectif_e, e.nom_equipe
+             FROM temps_effectif te
+             JOIN equipe e ON e.id_equipe = te.id_equipe
+             WHERE te.id_match = :id";
 
 $stmtTemps = $pdo->prepare($sqlTemps);
 $stmtTemps->execute(['id' => $id]);
-$tempsEffectif = $stmtTemps->fetch(PDO::FETCH_ASSOC);
+$tempsEffectifs = $stmtTemps->fetchAll(PDO::FETCH_ASSOC);
 
 function convertToSeconds(string $time): int {
     list($hours, $minutes, $seconds) = explode(':', $time);
     return ($hours * 3600) + ($minutes * 60) + $seconds;
 }
 
-$pourcentage_beziers = $pourcentage_adverse = 0;
+$pourcentages = [];
 
 if (
-    $tempsEffectif &&
-    !empty($tempsEffectif['temps_effectif_total']) &&
-    $tempsEffectif['temps_effectif_total'] !== '00:00:00'
+    $tempsEffectifs &&
+    !empty($match['temps_effectif_total']) &&
+    $match['temps_effectif_total'] !== '00:00:00'
 ) {
-    $total_sec = convertToSeconds($tempsEffectif['temps_effectif_total']);
-    $beziers_sec = convertToSeconds($tempsEffectif['temps_effectif_beziers']);
-    $adverse_sec = convertToSeconds($tempsEffectif['temps_effectif_equipe_adverse']);
+    $total_sec = convertToSeconds($match['temps_effectif_total']);
 
-    if ($total_sec > 0) {
-        $pourcentage_beziers = round(($beziers_sec / $total_sec) * 100);
-        $pourcentage_adverse = round(($adverse_sec / $total_sec) * 100);
+    foreach ($tempsEffectifs as $row) {
+        $nomEquipe = $row['nom_equipe'];
+        $tempsSec = convertToSeconds($row['temps_effectif_e']);
+        $pourcentages[$nomEquipe] = ($total_sec > 0)
+            ? round(($tempsSec / $total_sec) * 100)
+            : 0;
     }
 }
 
-$sqlTempsmt1 = "
-select possession_mt_1.possession_mt_1_beziers, possession_mt_1.possession_mt_1_equipe_adverse, possession_mt_1.possession_mt_1_total
-from possession_mt_1
-join `match` m ON m.id_possession_mt_1=possession_mt_1.id_possession_mt_1 
-where m.id_match = :id
-";
 
-$stmtTempsMT1 = $pdo->prepare($sqlTempsmt1);
-$stmtTempsMT1->execute(['id' => $id]);
-$possessionMT1 = $stmtTempsMT1->fetch(PDO::FETCH_ASSOC);
+$sqlPossession1 = "SELECT p.possession_mt_1_e AS possession, e.nom_equipe
+                   FROM possession_mt_1 p
+                   JOIN equipe e ON e.id_equipe = p.id_equipe
+                   WHERE p.id_match = :id";
 
-$pourcentage_beziers_mt1 = $pourcentage_adverse_mt1 = 0;
+$stmtPossession1 = $pdo->prepare($sqlPossession1);
+$stmtPossession1->execute(['id' => $id]);
+$possessions1 = $stmtPossession1->fetchAll(PDO::FETCH_ASSOC);
 
-if (
-    $possessionMT1 &&
-    !empty($possessionMT1['possession_mt_1_total']) &&
-    $possessionMT1['possession_mt_1_total'] !== '00:00:00'
-) {
-    $total_sec = convertToSeconds($possessionMT1['possession_mt_1_total']);
-    $beziers_sec = convertToSeconds($possessionMT1['possession_mt_1_beziers']);
-    $adverse_sec = convertToSeconds($possessionMT1['possession_mt_1_equipe_adverse']);
-
-    if ($total_sec > 0) {
-        $pourcentage_beziers_mt1 = round(($beziers_sec / $total_sec) * 100);
-        $pourcentage_adverse_mt1 = round(($adverse_sec / $total_sec) * 100);
-    }
+// Fonction pour convertir HH:MM:SS en secondes
+function convertToSeconds1(string $time): int {
+    list($hours, $minutes, $seconds) = explode(':', $time);
+    return ($hours * 3600) + ($minutes * 60) + $seconds;
 }
 
-$sqlTempsmt2 = "
-select possession_mt_2.possession_mt_2_beziers, possession_mt_2.possession_mt_2_equipe_adverse, possession_mt_2.possession_mt_2_total
-from possession_mt_2
-join `match` m ON m.id_possession_mt_2=possession_mt_2.id_possession_mt_2 
-where m.id_match = :id
-";
+$pourcentagesPossession1 = [];
+$total1_sec = 0;
 
-$stmtTempsMT2 = $pdo->prepare($sqlTempsmt2);
-$stmtTempsMT2->execute(['id' => $id]);
-$possessionMT2 = $stmtTempsMT2->fetch(PDO::FETCH_ASSOC);
-
-$pourcentage_beziers_mt2 = $pourcentage_adverse_mt2 = 0;
-
-if (
-    $possessionMT2 &&
-    !empty($possessionMT2['possession_mt_2_total']) &&
-    $possessionMT2['possession_mt_2_total'] !== '00:00:00'
-) {
-    $total_sec = convertToSeconds($possessionMT2['possession_mt_2_total']);
-    $beziers_sec = convertToSeconds($possessionMT2['possession_mt_2_beziers']);
-    $adverse_sec = convertToSeconds($possessionMT2['possession_mt_2_equipe_adverse']);
-
-    if ($total_sec > 0) {
-        $pourcentage_beziers_mt2 = round(($beziers_sec / $total_sec) * 100);
-        $pourcentage_adverse_mt2 = round(($adverse_sec / $total_sec) * 100);
-    }
+// Total en secondes
+foreach ($possessions1 as $row) {
+    $total1_sec += convertToSeconds1($row['possession']);
 }
+
+// Calcul des pourcentages
+foreach ($possessions1 as $row) {
+    $equipe = $row['nom_equipe'];
+    $temps_sec = convertToSeconds1($row['possession']);
+    $pourcentagesPossession1[$equipe] = ($total1_sec > 0)
+        ? round(($temps_sec / $total1_sec) * 100)
+        : 0;
+}
+
+
+$sqlPossession2 = "SELECT p.possession_mt_2_e AS possession, e.nom_equipe
+                   FROM possession_mt_2 p
+                   JOIN equipe e ON e.id_equipe = p.id_equipe
+                   WHERE p.id_match = :id";
+
+$stmtPossession2 = $pdo->prepare($sqlPossession2);
+$stmtPossession2->execute(['id' => $id]);
+$possessions2 = $stmtPossession2->fetchAll(PDO::FETCH_ASSOC);
+
+// Fonction pour convertir HH:MM:SS en secondes
+function convertToSeconds2(string $time): int {
+    list($hours, $minutes, $seconds) = explode(':', $time);
+    return ($hours * 3600) + ($minutes * 60) + $seconds;
+}
+
+$pourcentagesPossession2 = [];
+$total2_sec = 0;
+
+// Total en secondes
+foreach ($possessions2 as $row) {
+    $total2_sec += convertToSeconds2($row['possession']);
+}
+
+// Calcul des pourcentages
+foreach ($possessions2 as $row) {
+    $equipe = $row['nom_equipe'];
+    $temps_sec = convertToSeconds2($row['possession']);
+    $pourcentagesPossession2[$equipe] = ($total2_sec > 0)
+        ? round(($temps_sec / $total2_sec) * 100)
+        : 0;
+}
+
 
 
 // Récupération sécurisée des valeurs
@@ -211,10 +223,11 @@ if ($id_match && $nom_equipe) {
         ev.nom_equipe AS equipe_visiteur
     FROM fin_actions_collectives fac
     JOIN equipe eq ON fac.id_equipe = eq.id_equipe
-    JOIN `match` m ON m.id_match = :id
+    JOIN `match` m ON m.id_match = fac.id_match
     JOIN equipe el ON el.nom_equipe = m.locaux
     JOIN equipe ev ON ev.nom_equipe = m.visiteurs
     WHERE eq.nom_equipe = :nom_equipe
+    AND fac.id_match = :id
     ";
 
     $stmtFinAction = $pdo->prepare($sqlFinAction);
@@ -224,8 +237,17 @@ if ($id_match && $nom_equipe) {
     ]);
 
     $dataFinAction = $stmtFinAction->fetchAll(PDO::FETCH_ASSOC);
-} else {
-    echo "<p>Paramètres manquants : id du match ou nom de l'équipe.</p>";
+
+// On construit $match à partir des données
+if (!isset($match) && !empty($dataFinAction)) {
+    $match = [
+        'id_match' => $dataFinAction[0]['id_match'],
+        'locaux' => $dataFinAction[0]['locaux'],
+        'visiteurs' => $dataFinAction[0]['visiteurs']
+    ];
+}
+
+
 }
 
 
@@ -264,125 +286,139 @@ if ($id_match && $nom_equipe) {
 
 <div class="bg-gray-900 text-white max-w-6xl mx-auto p-6 space-y-8 rounded-lg shadow-lg mb-8">
 
-  <div class="flex flex-col lg:flex-row justify-center gap-12">
-    
-    <!-- Bloc Temps Effectif -->
-    <?php if ($tempsEffectif): ?>
-    <div class="flex flex-col items-center">
-      <div class="text-center text-sm text-gray-300 mb-4">
-        <p><strong>Temps effectif total :</strong> <?= h($tempsEffectif['temps_effectif_total']) ?> min</p>
-      </div>
-      <div class="flex justify-center items-center gap-8">
-        <!-- Cercle Béziers -->
-        <div class="relative w-24 h-24">
-          <svg class="w-full h-full" viewBox="0 0 36 36">
-            <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="text-blue-500" stroke="currentColor" stroke-width="3.8"
-              stroke-dasharray="<?= $pourcentage_beziers ?>, 100" fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center text-sm">
-            <span><?= $pourcentage_beziers ?>%</span>
-            <span class="text-xs text-blue-400 text-center"><?= $match['locaux'] ?></span>
-          </div>
-          <p><?= h($tempsEffectif['temps_effectif_beziers']) ?> min</p>
-        </div>
+ <div class="flex flex-col lg:flex-row justify-center gap-12">
 
-        <!-- Cercle Adverse -->
-        <div class="relative w-24 h-24">
-          <svg class="w-full h-full" viewBox="0 0 36 36">
-            <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="text-red-500" stroke="currentColor" stroke-width="3.8"
-              stroke-dasharray="<?= $pourcentage_adverse ?>, 100" fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-          </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center text-sm">
-            <span><?= $pourcentage_adverse ?>%</span>
-            <span class="text-xs text-red-400 text-center"><?= $match['visiteurs'] ?></span>
-          </div>
-          <p><?= h($tempsEffectif['temps_effectif_equipe_adverse']) ?> min</p>
-        </div>
-      </div>
+  <!-- Bloc Temps Effectif -->
+  <?php if ($sqlTemps): ?>
+  <div class="flex flex-col items-center">
+    <div class="text-center text-sm text-gray-300 mb-4">
+      <p><strong>Temps effectif total :</strong> <?= h($match['temps_effectif_total']) ?> min</p>
     </div>
-    <?php endif; ?>
+    <div class="flex justify-center items-center gap-8">
 
-    <!-- Bloc Possession MT1 -->
-    <?php if ($possessionMT1): ?>
-    <div class="flex flex-col items-center">
-      <div class="text-center text-sm text-gray-300 mb-4">
-        <p><strong>Possession 1ère mi-temps :</strong> <?= h($possessionMT1['possession_mt_1_total']) ?> min</p>
-      </div>
-
-      <?php
-        $beziers_pct = $pourcentage_beziers_mt1;
-        $adverse_pct = 100 - $beziers_pct;
-      ?>
-
-      <div class="flex justify-center items-center">
-        <div class="relative w-24 h-24">
-          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-            <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path stroke="url(#grad)" stroke-width="3.8" fill="none" stroke-dasharray="100" stroke-dashoffset="0"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <defs>
-              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#3B82F6" />
-                <stop offset="<?= $beziers_pct ?>%" stop-color="#3B82F6" />
-                <stop offset="<?= $beziers_pct ?>%" stop-color="#EF4444" />
-                <stop offset="100%" stop-color="#EF4444" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center text-xs text-center">
-            <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
-            <span class="text-red-400"><?= h($match['visiteurs']) ?>: <?= $adverse_pct ?>%</span>
-          </div>
+      <!-- Cercle Béziers -->
+      <div class="relative w-24 h-24">
+        <svg class="w-full h-full" viewBox="0 0 36 36">
+          <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-blue-500" stroke="currentColor" stroke-width="3.8"
+            stroke-dasharray="<?= $pourcentages[$match['locaux']] ?? 0 ?>, 100" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-sm">
+          <span><?= $pourcentages[$match['locaux']] ?? 0 ?>%</span>
+          <span class="text-xs text-blue-400 text-center"><?= h($match['locaux']) ?></span>
         </div>
-      </div>
-    </div>
-    <?php endif; ?>
-
-    <!-- Bloc Possession MT2 -->
-    <?php if ($possessionMT2): ?>
-    <div class="flex flex-col items-center">
-      <div class="text-center text-sm text-gray-300 mb-4">
-        <p><strong>Possession 2ème mi-temps :</strong> <?= h($possessionMT2['possession_mt_2_total']) ?> min</p>
+        <p>
+          <?= h(array_column($tempsEffectifs, 'temps_effectif_e', 'nom_equipe')[$match['locaux']] ?? '00:00:00') ?>
+          min
+        </p>
       </div>
 
-      <?php
-        $beziers_pct = $pourcentage_beziers_mt2;
-        $adverse_pct = 100 - $beziers_pct;
-      ?>
-
-      <div class="flex justify-center items-center">
-        <div class="relative w-24 h-24">
-          <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-            <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path stroke="url(#grad)" stroke-width="3.8" fill="none" stroke-dasharray="100" stroke-dashoffset="0"
-              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <defs>
-              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#3B82F6" />
-                <stop offset="<?= $beziers_pct ?>%" stop-color="#3B82F6" />
-                <stop offset="<?= $beziers_pct ?>%" stop-color="#EF4444" />
-                <stop offset="100%" stop-color="#EF4444" />
-              </linearGradient>
-            </defs>
-          </svg>
-          <div class="absolute inset-0 flex flex-col items-center justify-center text-xs text-center">
-            <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
-            <span class="text-red-400"><?= h($match['visiteurs']) ?>: <?= $adverse_pct ?>%</span>
-          </div>
+      <!-- Cercle Adverse -->
+      <div class="relative w-24 h-24">
+        <svg class="w-full h-full" viewBox="0 0 36 36">
+          <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="text-red-500" stroke="currentColor" stroke-width="3.8"
+            stroke-dasharray="<?= $pourcentages[$match['visiteurs']] ?? 0 ?>, 100" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-sm">
+          <span><?= $pourcentages[$match['visiteurs']] ?? 0 ?>%</span>
+          <span class="text-xs text-red-400 text-center"><?= h($match['visiteurs']) ?></span>
         </div>
+        <p>
+          <?= h(array_column($tempsEffectifs, 'temps_effectif_e', 'nom_equipe')[$match['visiteurs']] ?? '00:00:00') ?>
+          min
+        </p>
       </div>
-    </div>
-    <?php endif; ?>
 
+    </div>
   </div>
+  <?php endif; ?>
+
+
+
+      <!-- Bloc Possession MT1 -->
+      <?php if ($possessions1): ?>
+  <div class="flex flex-col items-center">
+    <div class="text-center text-sm text-gray-300 mb-4">
+      <p><strong>Possession 1ère mi-temps :</strong></p>
+    </div>
+
+    <?php
+      $beziers_pct = $pourcentagesPossession1[$match['locaux']] ?? 0;
+      $adverse_pct = $pourcentagesPossession1[$match['visiteurs']] ?? (100 - $beziers_pct);
+    ?>
+
+    <div class="flex justify-center items-center">
+      <div class="relative w-24 h-24">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path stroke="url(#grad)" stroke-width="3.8" fill="none" stroke-dasharray="100" stroke-dashoffset="0"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <defs>
+            <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3B82F6" />
+              <stop offset="<?= $beziers_pct ?>%" stop-color="#3B82F6" />
+              <stop offset="<?= $beziers_pct ?>%" stop-color="#EF4444" />
+              <stop offset="100%" stop-color="#EF4444" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-xs text-center">
+          <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
+          <span class="text-red-400"><?= h($match['visiteurs']) ?>: <?= $adverse_pct ?>%</span>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+<?php endif; ?>
+
+
+
+      <!-- Bloc Possession MT2 -->
+     <?php if ($possessions2): ?>
+  <div class="flex flex-col items-center">
+    <div class="text-center text-sm text-gray-300 mb-4">
+      <p><strong>Possession 2ᵉ mi-temps :</strong></p>
+    </div>
+
+    <?php
+      $beziers_pct = $pourcentagesPossession2[$match['locaux']] ?? 0;
+      $adverse_pct = $pourcentagesPossession2[$match['visiteurs']] ?? (100 - $beziers_pct);
+    ?>
+
+    <div class="flex justify-center items-center">
+      <div class="relative w-24 h-24">
+        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+          <path class="text-gray-700" stroke="currentColor" stroke-width="3.8" fill="none"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path stroke="url(#grad2)" stroke-width="3.8" fill="none" stroke-dasharray="100" stroke-dashoffset="0"
+            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <defs>
+            <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#3B82F6" />
+              <stop offset="<?= $beziers_pct ?>%" stop-color="#3B82F6" />
+              <stop offset="<?= $beziers_pct ?>%" stop-color="#EF4444" />
+              <stop offset="100%" stop-color="#EF4444" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-xs text-center">
+          <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
+          <span class="text-red-400"><?= h($match['visiteurs']) ?>: <?= $adverse_pct ?>%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+<?php endif; ?>
+
+
+    </div>
 
 </div>
 
@@ -621,47 +657,132 @@ new Chart(document.getElementById('barChart'), {
 </script>
 
 <div class="bg-gray-900 text-white max-w-6xl mx-auto p-6 mt-10 rounded-lg shadow-lg mb-8">
- <h2>Filtrer les actions</h2>
+  <h2>Filtrer les actions</h2>
 
   <form action="" method="get">
-    <input type="hidden" name="id" value="<?= htmlspecialchars($match['id_match']) ?>">
+    <input type="hidden" name="id" value="<?= htmlspecialchars($match['id_match'] ?? '') ?>">
 
     <label for="mi_temps">Choisir la mi-temps :</label>
-    <select id="mi_temps" name="mi_temps" onchange="this.form.submit()">
-        <option value="1" <?= ($mi_temps == 1) ? 'selected' : '' ?>>1ère Mi-temps</option>
-        <option value="2" <?= ($mi_temps == 2) ? 'selected' : '' ?>>2ème Mi-temps</option>
+    <select id="mi_temps" name="mi_temps" onchange="updateActions()" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2">
+        <option value="1" <?= (isset($mi_temps) && $mi_temps == 1) ? 'selected' : '' ?>>1ère Mi-temps</option>
+        <option value="2" <?= (isset($mi_temps) && $mi_temps == 2) ? 'selected' : '' ?>>2ème Mi-temps</option>
     </select>
 
     <label for="nom_equipe">Choisir l'équipe :</label>
-    <select id="nom_equipe" name="nom_equipe" onchange="this.form.submit()">
-        <option value="<?= htmlspecialchars($match['locaux']) ?>" <?= ($nom_equipe == $match['locaux']) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($match['locaux']) ?>
+    <select id="nom_equipe" name="nom_equipe" onchange="updateActions()" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2">
+        <option value="<?= htmlspecialchars($match['locaux'] ?? '') ?>" <?= (isset($nom_equipe) && $nom_equipe == ($match['locaux'] ?? '')) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($match['locaux'] ?? '') ?>
         </option>
-        <option value="<?= htmlspecialchars($match['visiteurs']) ?>" <?= ($nom_equipe == $match['visiteurs']) ? 'selected' : '' ?>>
-            <?= htmlspecialchars($match['visiteurs']) ?>
+        <option value="<?= htmlspecialchars($match['visiteurs'] ?? '') ?>" <?= (isset($nom_equipe) && $nom_equipe == ($match['visiteurs'] ?? '')) ? 'selected' : '' ?>>
+            <?= htmlspecialchars($match['visiteurs'] ?? '') ?>
         </option>
     </select>
-</form>
+  </form>
 
+  <script>
+  function updateActions() {
+      const miTemps = document.getElementById('mi_temps').value;
+      const nomEquipe = document.getElementById('nom_equipe').value;
+      const urlParams = new URLSearchParams(window.location.search);
+      const idMatch = urlParams.get('id');
 
+      if (idMatch && nomEquipe) {
+          window.location.href = `match.php?id=${idMatch}&nom_equipe=${nomEquipe}&mi_temps=${miTemps}`;
+      }
+  }
+  </script>
 
-<script>
-function updateActions() {
-    const miTemps = document.getElementById('mi_temps').value;
-    const nomEquipe = document.getElementById('nom_equipe').value;
-    const urlParams = new URLSearchParams(window.location.search);
-    const idMatch = urlParams.get('id'); // on garde le match actuel
+  <!-- INSERT ICI : le tableau filtré et repliable -->
+  <?php
+  $categoriesPrincipales = ['Mêlée', 'Ruck', 'Faute règlement', 'Touche', 'Maul', 'Coup d\'envoi', 'Plaquage', 'CPP', 'CPF'];
+  $groupedActions = [];
+  foreach ($dataFinAction as $action) {
+      foreach ($categoriesPrincipales as $cat) {
+          if (stripos($action['action'], $cat) === 0) {
+              $groupedActions[$cat][] = $action;
+              break;
+          }
+      }
+  }
+  ?>
 
-    if (idMatch && nomEquipe) {
-        window.location.href = `match.php?id=${idMatch}&nom_equipe=${nomEquipe}&mi_temps=${miTemps}`;
-    }
-}
-</script>
+  <?php if (!empty($groupedActions)): ?>
+    <div class="mt-6 overflow-x-auto">
+      <h3 class="text-lg font-semibold mb-4">Statistiques des actions (par catégorie) :</h3>
+      <table class="min-w-full table-auto bg-gray-800 text-white rounded-lg overflow-hidden shadow-lg">
+        <thead class="bg-gray-700 text-sm uppercase text-gray-300">
+          <tr>
+            <th class="px-4 py-3 text-left">Catégorie</th>
+            <th class="px-4 py-3 text-center">1ère Mi-temps</th>
+            <th class="px-4 py-3 text-center">2ème Mi-temps</th>
+            <th class="px-4 py-3 text-center">Total</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-600">
 
+          <?php foreach ($groupedActions as $cat => $actions): ?>
+            <?php
+              $totalMT1 = 0;
+              $totalMT2 = 0;
+              $totalGlobal = 0;
+              foreach ($actions as $a) {
+                  if (isset($mi_temps) && $mi_temps == 1) $totalMT1 += $a['mt'];
+                  if (isset($mi_temps) && $mi_temps == 2) $totalMT2 += $a['mt'];
+                  $totalGlobal += $a['total'];
+              }
+            ?>
+            <tr class="hover:bg-gray-700 cursor-pointer transition" onclick="toggleDetails('<?= md5($cat) ?>')">
+              <td class="px-4 py-2 font-semibold"><?= htmlspecialchars($cat) ?></td>
+              <td class="px-4 py-2 text-center"><?= $totalMT1 ?: '-' ?></td>
+              <td class="px-4 py-2 text-center"><?= $totalMT2 ?: '-' ?></td>
+              <td class="px-4 py-2 text-center"><?= $totalGlobal ?></td>
+            </tr>
+
+            <tr id="details-<?= md5($cat) ?>" class="hidden bg-gray-700">
+              <td colspan="4" class="px-4 py-2">
+                <ul class="list-disc ml-5 text-sm space-y-1">
+                  <?php foreach ($actions as $detail): ?>
+                    <li>
+                      <strong><?= htmlspecialchars($detail['action']) ?>:</strong>
+                      MT: <?= htmlspecialchars($detail['mt']) ?> |
+                      Total: <?= htmlspecialchars($detail['total']) ?>
+                    </li>
+                  <?php endforeach; ?>
+                </ul>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+
+        </tbody>
+      </table>
     </div>
 
+    <script>
+    function toggleDetails(id) {
+      const row = document.getElementById('details-' + id);
+      if (row) {
+        row.classList.toggle('hidden');
+      }
+    }
+    </script>
 
+  <?php else: ?>
+    <p class="mt-6 text-gray-400 italic">Aucune action trouvée pour ce filtre.</p>
+  <?php endif; ?>
 </div>
+
+
+
+
+<?php if (isset($_GET['id']) && is_numeric($_GET['id'])): ?>
+  <div class="text-center mt-4">
+    <a href="match_pdf.php?id=<?= htmlspecialchars($_GET['id']) ?>" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      Télécharger en PDF
+    </a>
+  </div>
+<?php endif; ?>
+
+
 
 <div class="text-center pt-6">
   <a href="matchs.php" class="inline-block px-5 py-2 bg-white/80 text-black font-semibold rounded-md hover:bg-white transition">

@@ -1,141 +1,13 @@
 import pandas as pd
-import json
 import sys
 import glob
 import os
 import traceback
 from app import app, db
 
-import unicodedata
-
-def normalize_name(s: str) -> str:
-    """Retire accents, points et met en majuscules."""
-    if not isinstance(s, str):
-        return ""
-    # décompose les accents
-    nfkd = unicodedata.normalize('NFKD', s)
-    # conserve que les caractères ASCII
-    ascii_bytes = nfkd.encode('ASCII', 'ignore')
-    clean = ascii_bytes.decode('ASCII')
-    # supprime les points, met en majuscules et strippe
-    return clean.replace(".", "").upper().strip()
-
-
 # ──────────────────────────────────────────────────────────────────────────────
 #  Utilitaires
 # ──────────────────────────────────────────────────────────────────────────────
-PONDERATIONS = {
-    "1":  {"attaque": 0.20, "defense": 0.25, "spec": 0.25, "engagement": 0.15, "discipline": 0.10, "initiative": 0.05},
-    "2":  {"attaque": 0.25, "defense": 0.20, "spec": 0.20, "engagement": 0.15, "discipline": 0.10, "initiative": 0.10},
-    "3":  {"attaque": 0.10, "defense": 0.25, "spec": 0.35, "engagement": 0.15, "discipline": 0.10, "initiative": 0.05},
-    "4":  {"attaque": 0.20, "defense": 0.25, "spec": 0.20, "engagement": 0.15, "discipline": 0.15, "initiative": 0.05},
-    "5":  {"attaque": 0.20, "defense": 0.25, "spec": 0.15, "engagement": 0.15, "discipline": 0.15, "initiative": 0.10},
-    "6":  {"attaque": 0.25, "defense": 0.25, "spec": 0.15, "engagement": 0.20, "discipline": 0.10, "initiative": 0.05},
-    "7":  {"attaque": 0.10, "defense": 0.30, "spec": 0.25, "engagement": 0.20, "discipline": 0.10, "initiative": 0.15},
-    "8":  {"attaque": 0.25, "defense": 0.20, "spec": 0.25, "engagement": 0.20, "discipline": 0.10, "initiative": 0.10},
-    "9":  {"attaque": 0.20, "defense": 0.20, "spec": 0.30, "engagement": 0.10, "discipline": 0.10, "initiative": 0.10},
-    "10": {"attaque": 0.25, "defense": 0.20, "spec": 0.20, "engagement": 0.10, "discipline": 0.15, "initiative": 0.10},
-    "11": {"attaque": 0.35, "defense": 0.20, "spec": 0.10, "engagement": 0.15, "discipline": 0.15, "initiative": 0.05},
-    "12": {"attaque": 0.25, "defense": 0.25, "spec": 0.15, "engagement": 0.20, "discipline": 0.10, "initiative": 0.05},
-    "13": {"attaque": 0.30, "defense": 0.30, "spec": 0.20, "engagement": 0.10, "discipline": 0.05, "initiative": 0.05},
-    "14": {"attaque": 0.35, "defense": 0.20, "spec": 0.10, "engagement": 0.15, "discipline": 0.15, "initiative": 0.05},
-    "15": {"attaque": 0.20, "defense": 0.15, "spec": 0.35, "engagement": 0.10, "discipline": 0.10, "initiative": 0.10}
-}
-
-# Barème de contribution par action
-COEFFICIENTS = {
-        "Jeu au pied - Perte du ballon": ("defense", -5),
-        "Jeu au pied - Sortie du ballon": ("spec", 10),
-        "Jeu au pied - Injouable (perte)": ("defense", -3),
-        "Jeu au pied - Positif": ("spec", -3),
-        "Jeu au pied - Négatif": ("engagement", -4),
-        "Perte de balle - Passe manquée": ("discipline", -9),
-        "Perte de balle - En avant": ("discipline", -8),
-        "Perte de balle - Perte du ballon": ("defense", -2),
-        "Perte de balle - Négatif": ("defense", -1),
-        "Faute règlement - Jeu au sol": ("discipline", -3),
-        "Faute règlement - Hors jeu de ligne": ("discipline", -5),
-        "Faute règlement - Brutalité": ("discipline", -6),
-        "Faute règlement - Pénalité": ("discipline", -10),
-        "Faute règlement - CPP Concédé": ("discipline", -9),
-        "Faute règlement - Négatif": ("discipline", -7),
-        "Faute technique - Touche": ("discipline", -5),
-        "Faute technique - Jeu Courant": ("discipline", -4),
-        "Faute technique - En avant": ("discipline", -6),
-        "Faute technique - Mauvaise Passe": ("discipline", -5),
-        "Faute technique - Avantage": ("discipline", -3),
-        "Faute technique - Mêlée": ("discipline", -6),
-        "Faute technique - Conservation": ("discipline", -7),
-        "Faute technique - CPF Concédé": ("discipline", -8),
-        "Faute technique - Négatif": ("discipline", -6),
-        "Points - Essai": ("attaque", 9),
-        "Points - Transformation": ("attaque", 6),
-        "Points - Sortie du ballon": ("attaque", 3),
-        "Points - Marque": ("attaque", 10),
-        "Points - Positif": ("attaque", 5),
-        "Points - Négatif": ("attaque", -5),
-        "Plaquage - Récupérateur": ("defense", 6),
-        "Plaquage - Perte du ballon": ("defense", -4),
-        "Plaquage - CPP Concédé": ("defense", -8),
-        "Plaquage - Mêlée concédée": ("defense", -6),
-        "Plaquage - Sortie du ballon": ("defense", 2),
-        "Plaquage - Positif": ("defense", 3),
-        "Plaquage - Négatif": ("defense", -10),
-        "Plaquage manqué - Négatif": ("defense", -5),
-        "Franchissement - Marque": ("attaque", 8),
-        "Franchissement - Positif": ("attaque", 5),
-        "Récupération - Positif": ("defense", 4),
-        "Assistant - Positif": ("engagement", 3),
-        "Lanceur - Conservation": ("spec", 4),
-        "Lanceur - Perte du ballon": ("spec", -4),
-        "Lanceur - Mêlée concédée": ("spec", -5),
-        "Lanceur - CPF Concédé": ("spec", -6),
-        "Lanceur - Positif": ("spec", 5),
-        "Lanceur - Négatif": ("spec", -5),
-        "Sauteur - Conservation": ("spec", 4),
-        "Sauteur - Perte du ballon": ("spec", -4),
-        "Sauteur - Mêlée concédée": ("spec", -6),
-        "Sauteur - CPF Concédé": ("spec", -5),
-        "Sauteur - Positif": ("spec", 5),
-        "Sauteur - Neutre": ("spec", 0),
-        "Sauteur - Négatif": ("spec", -5),
-        "Contreur - Perte du ballon": ("spec", -4),
-        "Contreur - Positif": ("spec", 6),
-        "Pousseur - Conservation": ("spec", 5),
-        "Pousseur - CPP Concédé": ("spec", -8),
-        "Pousseur - CPP Obtenu": ("spec", 7),
-        "Pousseur - CPF Obtenu": ("spec", 7),
-        "Pousseur - Injouable": ("spec", 2),
-        "Pousseur - Positif": ("spec", 5),
-        "Pousseur - Neutre": ("spec", 0),
-        "Pousseur - Négatif": ("spec", -5),
-        "Soutien Off - Conservation": ("engagement", 3),
-        "Soutien Off - Perte du ballon": ("engagement", -4),
-        "Soutien Off - CPP Concédé": ("engagement", -5),
-        "Soutien Off - CPP Obtenu": ("engagement", 4),
-        "Soutien Off - Positif": ("engagement", 3),
-        "Soutien Off - Neutre": ("engagement", 0),
-        "Soutien Off - Négatif": ("engagement", -3),
-        "Porteur de balle - Conservation": ("engagement", 4),
-        "Porteur de balle - Perte du ballon": ("engagement", -5),
-        "Porteur de balle - CPP Concédé": ("engagement", -6),
-        "Porteur de balle - CPP Obtenu": ("engagement", 5),
-        "Porteur de balle - Positif": ("engagement", 4),
-        "Porteur de balle - Neutre": ("engagement", 0),
-        "Porteur de balle - Négatif": ("engagement", -4),
-        "Passeur - Conservation": ("engagement", 3),
-        "Passeur - CPP Obtenu": ("engagement", 4),
-        "Passeur - Positif": ("engagement", 3),
-        "Contest Air - Gagne": ("defense", 6),
-        "Contest Air - Perdu": ("defense", -4),
-        "Contest Air - Conservation": ("defense", 3),
-        "Contest Air - Perte du ballon": ("defense", -3),
-        "Contest Air - Positif": ("defense", 4),
-        "Contest Air - Négatif": ("defense", -4),
-        "botteur - Conservation": ("spec", 3),
-        "botteur - Perte du ballon": ("spec", -4),
-        "botteur - Positif": ("spec", 4)
-}
 
 # Assure un encodage UTF‑8 dans la console Docker/WSL/Windows
 sys.stdout.reconfigure(encoding="utf-8")
@@ -201,12 +73,6 @@ def import_excel_to_db(data_match_path: str, stats_path: str, gps_path: str):
                 raise ValueError(f"⚠️ Impossible de déterminer une seule équipe adverse ({equipes})")
             visiteurs_name = opp[0]
 
-            cursor.execute("SELECT id_joueur, nom_joueur, prenom_joueur FROM joueur")
-            joueurs_table = {}
-            for id_j, nom_db, prenom_db in cursor.fetchall():
-                key = (normalize_name(nom_db), normalize_name(prenom_db))
-                joueurs_table[key] = id_j
-
             # ───────────────
             # 2) Feuille principale « Data Match »
             # ───────────────
@@ -215,18 +81,6 @@ def import_excel_to_db(data_match_path: str, stats_path: str, gps_path: str):
 
             if df.empty:
                 raise ValueError("Feuille 0 vide après filtrage.")
-            
-            joueurs_df = (
-                pd.read_excel(data_match_path, sheet_name=1)
-                .dropna(subset=["nom","prenom","poste"])
-                .assign(
-                    nom=lambda df: df["nom"].str.strip().str.upper(),
-                    prenom=lambda df: df["prenom"].str.strip(),
-                    poste=lambda df: df["poste"].astype(str).str.strip()
-                )
-                .loc[lambda df: df["poste"].isin(PONDERATIONS.keys())]
-                .reset_index(drop=True)
-)
 
             # ───────────────
             # 3) Pré‑compilation des requêtes SQL
@@ -460,57 +314,6 @@ def import_excel_to_db(data_match_path: str, stats_path: str, gps_path: str):
                     inserted += 1
 
                 print(f"DEBUG: {inserted} stats importées pour le match {id_match}")
-
-                # i) Calcul de l’IDP
-                for _, pj in joueurs_df.iterrows():
-                    # récupérer poste et temps de jeu
-                    poste = str(pj["poste"])
-                    minutes_jouees = to_seconds(pj["temps_de_jeu"]) or 0
-
-                    # retrouver l'id_joueur
-                    nom_norm    = normalize_name(pj["nom"])
-                    prenom_norm = normalize_name(pj["prenom"])
-                    id_joueur = joueurs_table.get((nom_norm, prenom_norm))
-                    if id_joueur is None:
-                        print(f"⚠️ Joueur introuvable pour IDP (table preload) : {pj['nom']} {pj['prenom']}")
-                        continue
-
-                    # récupérer toutes les actions individuelles de ce joueur sur ce match
-                    cursor.execute(
-                        "SELECT action, valeur FROM export_stat_match WHERE id_joueur=%s AND id_match=%s",
-                        (id_joueur, id_match)
-                    )
-                    rows = cursor.fetchall()
-
-                    # sommer par catégorie
-                    scores_cat = {
-                        "attaque": 0.0, "defense": 0.0, "spec": 0.0,
-                        "engagement": 0.0, "discipline": 0.0, "initiative": 0.0
-                    }
-                    for action, valeur in rows:
-                        if action in COEFFICIENTS:
-                            cat, coef = COEFFICIENTS[action]
-                            scores_cat[cat] += coef * valeur
-
-                    # calcul du score brut
-                    poids_poste = PONDERATIONS[str(poste)]
-                    score_brut = sum(scores_cat[cat] * poids_poste[cat] for cat in scores_cat)
-
-                    # si vous voulez normaliser, définissez score_max (par exemple une constante ou un calcul)
-                    score_max = None
-                    idp_value = score_brut if score_max is None else score_brut / score_max
-
-                    # insérer dans idp (la colonne 'details' peut contenir le JSON des scores par catégorie)
-                    cursor.execute("""
-                        INSERT INTO idp (
-                        id_joueur, id_match, poste, idp,
-                        minutes_jouees, score_brut, score_max, details
-                        ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-                    """, (
-                        id_joueur, id_match, poste, idp_value,
-                        minutes_jouees, score_brut, score_max,
-                        json.dumps(scores_cat, ensure_ascii=False)
-                    ))
 
             # ───────────────
             # 6) Validation de la transaction

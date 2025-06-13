@@ -47,12 +47,6 @@ if (count(array_unique($selectedNames)) < count($selectedNames)) {
 <?php include 'sidebar.php'; ?>
 
 <div class="flex-1 ml-64">
-<header class="flex flex-col items-center space-y-4 py-6">
-<a href="index.php" class="flex flex-col items-center gap-2 hover:opacity-70 transition">
-  <img src="images/logo_asbh.png" alt="ASBH" class="w-24 h-auto object-contain" />
-</a>
-<h1 class="text-3xl font-bold">FACE À FACE MULTI-JOUEURS</h1>
-</header>
 
 <main class="max-w-6xl mx-auto p-8">
 <form method="get" class="flex flex-col items-center gap-4 mb-10">

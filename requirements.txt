@@ -14,3 +14,9 @@ faiss-cpu
 sentence-transformers
 transformers
 torch
+
+# ETL app.py
+pandas 
+sqlalchemy 
+flask 
+pymysql
