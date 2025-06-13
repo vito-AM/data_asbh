@@ -23,6 +23,13 @@ if (!$joueur) {
   exit;
 }
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['supprimer'])) {
+  $pdo->prepare("DELETE FROM joueur WHERE id_joueur = ?")->execute([$id]);
+  $_SESSION['toast'] = ['message' => 'Joueur supprimé', 'type' => 'error'];
+  header('Location: joueurs.php');
+  exit;
+}
+
 // Préremplir poste et poste_secondaire
 $poste        = $joueur['poste'] ?? '';
 $posteSecond  = $joueur['poste_secondaire'] ?? '';
@@ -215,6 +222,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </select>
       </section>
 
+
       <!-- SECTION PHOTO & BOUTONS -->
       <aside class="md:w-80 flex flex-col items-stretch gap-4">
         <div class="bg-black/70 border-2 border-white/60 rounded-xl p-6 text-center shadow-lg space-y-4">
@@ -238,12 +246,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 class="bg-primary hover:bg-primaryDark text-white font-semibold py-2 rounded shadow">
           Mettre à jour
         </button>
-        <a href="joueur.php?id=<?= htmlspecialchars($joueur['id_joueur']) ?>"
-           class="text-center bg-danger hover:bg-red-800 py-2 rounded shadow">
-          Annuler
-        </a>
+        <!-- BOUTON SUPPRIMER (visible, mais lié au formulaire deleteForm) -->
+<button type="submit"
+        form="deleteForm"
+        onclick="return confirmDelete('<?= htmlspecialchars($joueur['prenom_joueur'].' '.$joueur['nom_joueur']) ?>');"
+        class="w-full bg-danger hover:bg-red-700 px-4 py-2 rounded">
+  🗑 Supprimer
+</button>
+
+    
+          <a href="joueur.php?id=<?= $id ?>" class="fixed bottom-6 right-6 bg-white/20 hover:bg-primary px-4 py-2 rounded-full backdrop-blur-sm">↩ Joueur</a>
       </aside>
     </form>
+    <form id="deleteForm" method="post"
+      action="modifier_joueur.php?id=<?= $id ?>">
+  <input type="hidden" name="supprimer" value="1">
+</form>
+
   </main>
 
   <script>
@@ -252,5 +271,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       if (f) document.getElementById('preview').src = URL.createObjectURL(f);
     });
   </script>
+  <script>
+function confirmDelete (playerName) {
+  return confirm(
+    '⚠️  Cette action est irréversible.\n\n' +
+    'Supprimer définitivement le joueur « ' + playerName + ' » ?'
+  );
+}
+</script>
 </body>
 </html>

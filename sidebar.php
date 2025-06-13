@@ -1,6 +1,6 @@
 <?php $current = basename($_SERVER['PHP_SELF']); ?>
 
-<aside class="fixed inset-y-0 left-0 w-48 z-20 shadow-lg
+<aside id="sidebar" class="fixed inset-y-0 left-0 w-48 z-20 shadow-lg
               h-screen flex flex-col text-gray-100
               divide-y divide-white/15
               bg-gradient-to-b from-[#292E68] via-[#1f2355] to-[#0e1128]">
@@ -42,15 +42,8 @@
      class="flex-1 flex items-center justify-center w-full py-3 text-lg text-center rounded-xl
             hover:bg-black/20 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200
             <?= $current === 'import.php' ? 'bg-white/30 font-bold' : '' ?>">
-    IMPORTER FICHIERS
+    IMPORTER
   </a>
-
-  <a href="templates/chatbot.html"
-     class="flex-1 flex items-center justify-center w-full py-3 text-lg text-center rounded-xl
-            hover:bg-black/20 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200
-            <?= $current === 'templates/chatbot.html' ? 'bg-white/30 font-bold' : '' ?>">
-    CHATBOT
-</a>
 
 <div class="mt-auto p-4 text-center">
   <a href="gestion_utilisateurs.php"

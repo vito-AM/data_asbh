@@ -9,7 +9,6 @@ from langchain_community.tools.sql_database.tool import (
     QuerySQLDataBaseTool,
     InfoSQLDatabaseTool,
     ListSQLDatabaseTool,
-    QuerySQLCheckerTool,
 )
 from langchain_core.prompts import (
     FewShotPromptTemplate,
@@ -34,7 +33,7 @@ try:
         port=3306,
         user="root",
         password="root",
-        database="aya_application_asbh",
+        database="application_asbh",
         charset="utf8mb4",
         cursorclass=pymysql.cursors.DictCursor
     )
@@ -47,7 +46,7 @@ except pymysql.MySQLError as err:
 # 🔍 Lire le schéma de la BDD (inchangé)
 def get_schema(cursor):
     cursor.execute("SHOW TABLES")
-    tables = [row[f'Tables_in_aya_application_asbh'] for row in cursor.fetchall()]
+    tables = [row[f'Tables_in_application_asbh'] for row in cursor.fetchall()]
     schema = {}
     for table in tables:
         try:
@@ -93,7 +92,7 @@ examples = [
     },
     {
         "input": "Quels joueurs jouent au poste d’Ailier ?",
-        "query": "SELECT `nom_joueur`, `prenom_joueur` FROM `joueur` WHERE `poste` = '11' LIMIT 50;"
+        "query": "SELECT `nom_joueur`, `prenom_joueur` FROM `joueur` WHERE `poste` = 'Ailier' LIMIT 50;"
     },
     {
         "input": "Liste les joueurs nés après le 1er janvier 2025",
@@ -110,8 +109,392 @@ examples = [
     {
         "input": "Quels sont les noms et le poste secondaire des joueurs qui en ont un ?",
         "query": "SELECT `nom_joueur`, `poste_secondaire` FROM `joueur` WHERE `poste_secondaire` IS NOT NULL LIMIT 50;"
+    },
+    {
+        "input": "Nomme-moi tous les joueurs actifs avec leur équipe d’appartenance",
+        "query": """
+            SELECT j.nom_joueur, j.prenom_joueur, e.nom_equipe
+            FROM joueur j
+            JOIN equipe e ON j.id_equipe = e.id_equipe
+            WHERE j.activite = 'actif'
+            LIMIT 50;
+        """
+    },
+    {
+        "input": "Quels joueurs pèsent entre 90 kg et 110 kg ?",
+        "query": "SELECT nom_joueur, prenom_joueur, poids_kg FROM joueur WHERE poids_kg BETWEEN 90 AND 110 LIMIT 50;"
+    },
+    {
+        "input": "Affiche le nom et la taille des trois joueurs les plus petits",
+        "query": "SELECT nom_joueur, taille_cm FROM joueur ORDER BY taille_cm ASC LIMIT 3;"
+    },
+    {
+        "input": "Combien y a-t-il de joueurs par poste ?",
+        "query": "SELECT poste, COUNT(*) AS nb_joueurs FROM joueur GROUP BY poste;"
+    },
+    {
+        "input": "Quel est le poids moyen par poste secondaire ?",
+        "query": "SELECT poste_secondaire, AVG(poids_kg) AS poids_moyen FROM joueur WHERE poste_secondaire <> '' GROUP BY poste_secondaire;"
+    },
+    {
+        "input": "Liste des joueurs sans équipe (id_equipe NULL)",
+        "query": "SELECT nom_joueur, prenom_joueur FROM joueur WHERE id_equipe IS NULL LIMIT 50;"
+    },
+    {
+        "input": "Qui sont les 5 joueurs les plus lourds encore actifs ?",
+        "query": "SELECT nom_joueur, prenom_joueur, poids_kg FROM joueur WHERE activite = 'actif' ORDER BY poids_kg DESC LIMIT 5;"
+    },
+    {
+        "input": "Afficher le nom complet et l’âge des joueurs nés avant 2004",
+        "query": """
+            SELECT CONCAT(prenom_joueur, ' ', nom_joueur) AS joueur,
+                   TIMESTAMPDIFF(YEAR, date_naissance, CURDATE()) AS age
+            FROM joueur
+            WHERE date_naissance < '2004-01-01'
+            LIMIT 50;
+        """
+    },
+    {
+        "input": "Quelle équipe compte le plus de joueurs ?",
+        "query": """
+            SELECT e.nom_equipe, COUNT(*) AS total
+            FROM joueur j
+            JOIN equipe e ON j.id_equipe = e.id_equipe
+            GROUP BY e.id_equipe
+            ORDER BY total DESC
+            LIMIT 1;
+        """
+    },
+    # --- TABLE match / score ---------------------------------------------------
+    {
+        "input": "Quels sont la date et le score du match ayant l’ID 1 ?",
+        "query": "SELECT date, CONCAT(score_locaux, '-', score_visiteurs) AS score FROM match WHERE id_match = 1;"
+    },
+    {
+        "input": "Donne le vainqueur et l’écart de points pour chaque match",
+        "query": """
+            SELECT id_match,
+                   CASE WHEN score_locaux > score_visiteurs THEN locaux ELSE visiteurs END AS vainqueur,
+                   ABS(score_locaux - score_visiteurs) AS ecart
+            FROM match
+            ORDER BY date DESC
+            LIMIT 50;
+        """
+    },
+    {
+        "input": "Combien d’essais l’équipe ASBH a-t-elle marqués au match 1 ?",
+        "query": """
+            SELECT essais
+            FROM score s
+            JOIN equipe e ON s.id_equipe = e.id_equipe
+            WHERE e.nom_equipe = 'ASBH' AND id_match = 1;
+        """
+    },
+    {
+        "input": "Affiche le taux de réussite des transformations par équipe",
+        "query": """
+            SELECT e.nom_equipe,
+                   ROUND(SUM(transformations) / NULLIF(SUM(essais),0) * 100, 2) AS taux_reussite
+            FROM score s
+            JOIN equipe e ON s.id_equipe = e.id_equipe
+            GROUP BY e.nom_equipe
+            HAVING SUM(essais) > 0;
+        """
+    },
+    # --- TABLE courir ----------------------------------------------------------
+    {
+        "input": "Quelle distance totale a parcourue le joueur 1 dans le match 1 ?",
+        "query": """
+            SELECT SUM(distance_totale) AS distance_m
+            FROM courir
+            WHERE id_joueur = 1 AND id_match = 1;
+        """
+    },
+    {
+        "input": "Top 5 des joueurs ayant atteint la plus grande Vmax",
+        "query": """
+            SELECT id_joueur, MAX(vmax) AS vmax
+            FROM courir
+            GROUP BY id_joueur
+            ORDER BY vmax DESC
+            LIMIT 5;
+        """
+    },
+    {
+        "input": "Donne la distance moyenne par minute pour chaque joueur (match 1)",
+        "query": """
+            SELECT id_joueur,
+                   ROUND(SUM(distance_totale) / SUM(temps_de_jeu), 2) AS m_par_min
+            FROM courir
+            WHERE id_match = 1
+            GROUP BY id_joueur
+            LIMIT 50;
+        """
+    },
+    # --- TABLE idp -------------------------------------------------------------
+    {
+        "input": "Quel joueur a obtenu le meilleur IDP au match 1 ?",
+        "query": """
+            SELECT j.nom_joueur, j.prenom_joueur, i.idp
+            FROM idp i
+            JOIN joueur j ON j.id_joueur = i.id_joueur
+            WHERE i.id_match = 1
+            ORDER BY i.idp DESC
+            LIMIT 1;
+        """
+    },
+    {
+        "input": "Lister les IDP par poste pour le match 1",
+        "query": "SELECT poste, AVG(idp) AS idp_moyen FROM idp WHERE id_match = 1 GROUP BY poste;"
+    },
+    {
+        "input": "Quels joueurs ont joué plus de 60 minutes et un IDP > 50 ?",
+        "query": """
+            SELECT j.nom_joueur, j.prenom_joueur, i.idp, i.minutes_jouees
+            FROM idp i
+            JOIN joueur j ON j.id_joueur = i.id_joueur
+            WHERE i.minutes_jouees > 60 AND i.idp > 50
+            LIMIT 50;
+        """
+    },
+    # --- TABLE export_stat_match ----------------------------------------------
+    {
+        "input": "Nombre total de plaquages par joueur au match 1",
+        "query": """
+            SELECT id_joueur, valeur AS total_plaquages
+            FROM export_stat_match
+            WHERE action = 'Total Plaquage' AND id_match = 1
+            ORDER BY total_plaquages DESC
+            LIMIT 50;
+        """
+    },
+    {
+        "input": "Quels joueurs ont raté plus de 2 plaquages ?",
+        "query": """
+            SELECT id_joueur, valeur AS plaquages_manques
+            FROM export_stat_match
+            WHERE action = 'Total Plaquage manqué' AND valeur > 2
+            LIMIT 50;
+        """
+    },
+    # --- TABLE fin_actions_collectives ----------------------------------------
+    {
+        "input": "Total de rucks pour chaque équipe",
+        "query": """
+            SELECT id_equipe, SUM(total) AS total_rucks
+            FROM fin_actions_collectives
+            WHERE action = 'Ruck'
+            GROUP BY id_equipe;
+        """
+    },
+    {
+        "input": "Quelle équipe a concédé le plus de CPP en mêlée ?",
+        "query": """
+            SELECT id_equipe, SUM(total) AS cpp_concedes
+            FROM fin_actions_collectives
+            WHERE action = 'Mêlée CPP Concédé'
+            GROUP BY id_equipe
+            ORDER BY cpp_concedes DESC
+            LIMIT 1;
+        """
+    },
+    # --- TABLE localisation ----------------------------------------------------
+    {
+        "input": "Répartition des mêlées de l’équipe 1 par portion de terrain",
+        "query": """
+            SELECT portion_terrain, SUM(valeur) AS nb_mêlées
+            FROM localisation
+            WHERE id_equipe = 1 AND action = 'Mêlée'
+            GROUP BY portion_terrain;
+        """
+    },
+    {
+        "input": "Actions jouées dans la zone \"22-40\" durant les 15-55 min",
+        "query": """
+            SELECT DISTINCT action
+            FROM localisation
+            WHERE portion_terrain = '22-40' AND temps = '15-55';
+        """
+    },
+    # --- TABLE points ----------------------------------------------------------
+    {
+        "input": "Top 3 des secteurs rapportant le plus de points positifs (toutes équipes)",
+        "query": """
+            SELECT actions, SUM(points_positifs) AS pts_pos
+            FROM points
+            GROUP BY actions
+            ORDER BY pts_pos DESC
+            LIMIT 3;
+        """
+    },
+    {
+        "input": "Points totaux, positifs et négatifs de l’équipe CAR",
+        "query": """
+            SELECT points_total, points_positifs, points_negatifs
+            FROM points p
+            JOIN equipe e ON p.id_equipe = e.id_equipe
+            WHERE e.nom_equipe = 'CAR';
+        """
+    },
+    # --- TABLE possession & temps_effectif ------------------------------------
+    {
+        "input": "Quelle équipe a eu la plus longue possession en 1re mi-temps (match 1) ?",
+        "query": """
+            SELECT e.nom_equipe, p.possession_mt_1_e
+            FROM possession_mt_1 p
+            JOIN equipe e ON p.id_equipe = e.id_equipe
+            WHERE p.id_match = 1
+            ORDER BY p.possession_mt_1_e DESC
+            LIMIT 1;
+        """
+    },
+    {
+        "input": "Affiche le temps effectif de jeu par équipe (match 1)",
+        "query": """
+            SELECT e.nom_equipe, t.temps_effectif_e
+            FROM temps_effectif t
+            JOIN equipe e ON t.id_equipe = e.id_equipe
+            WHERE t.id_match = 1;
+        """
+    },
+    # --- TABLE users -----------------------------------------------------------
+    {
+        "input": "Lister tous les comptes utilisateurs et leur rôle",
+        "query": "SELECT username, role FROM users LIMIT 50;"
+    },
+    # --- REQUÊTES MULTI-TABLES AVANCÉES ---------------------------------------
+    {
+        "input": "Nom, poste et IDP des joueurs d’ASBH ayant couru plus de 5 000 m",
+        "query": """
+            SELECT j.nom_joueur, j.poste, i.idp
+            FROM joueur j
+            JOIN idp i  ON i.id_joueur = j.id_joueur
+            JOIN courir c ON c.id_joueur = j.id_joueur AND c.periode = 'Match entier'
+            WHERE j.id_equipe = 1     -- ASBH
+              AND c.distance_totale > 5000;
+        """
+    },
+    {
+        "input": "Pour chaque match, calcule le total d’essais marqués (toutes équipes)",
+        "query": """
+            SELECT id_match, SUM(essais) AS total_essais
+            FROM score
+            GROUP BY id_match
+            ORDER BY id_match;
+        """
+    },
+    {
+        "input": "Trouve la moyenne de nb_accel par poste (match 1)",
+        "query": """
+            SELECT j.poste, ROUND(AVG(c.nb_accel),2) AS accel_moy
+            FROM courir c
+            JOIN joueur j ON j.id_joueur = c.id_joueur
+            WHERE c.id_match = 1 AND c.periode = 'Match entier'
+            GROUP BY j.poste;
+        """
+    },
+    {
+        "input": "Quels joueurs ont à la fois un IDP > 60 et plus de 10 plaquages ?",
+        "query": """
+            SELECT j.nom_joueur, i.idp, ps.valeur AS plaquages
+            FROM idp i
+            JOIN joueur j          ON j.id_joueur = i.id_joueur
+            JOIN export_stat_match ps ON ps.id_joueur = j.id_joueur
+            WHERE i.idp > 60
+              AND ps.action = 'Total Plaquage'
+              AND ps.valeur > 10
+            LIMIT 50;
+        """
+    },
+    {
+        "input": "Classe les équipes par total de points négatifs (descendant)",
+        "query": """
+            SELECT e.nom_equipe, SUM(points_negatifs) AS pts_neg
+            FROM points p
+            JOIN equipe e ON e.id_equipe = p.id_equipe
+            GROUP BY e.id_equipe
+            ORDER BY pts_neg DESC;
+        """
+    },
+    {
+        "input": "Durée totale de possession (1re + 2e mi-temps) pour l’équipe 2 (match 1)",
+        "query": """
+            SELECT SEC_TO_TIME(
+                     TIME_TO_SEC(p1.possession_mt_1_e) + TIME_TO_SEC(p2.possession_mt_2_e)
+                   ) AS possession_totale
+            FROM possession_mt_1 p1
+            JOIN possession_mt_2 p2 ON p1.id_equipe = p2.id_equipe AND p1.id_match = p2.id_match
+            WHERE p1.id_equipe = 2 AND p1.id_match = 1;
+        """
+    },
+    {
+        "input": "Nombre de rucks gagnés par ASBH (équipe 1)",
+        "query": """
+            SELECT SUM(total) AS rucks_gagnes
+            FROM fin_actions_collectives
+            WHERE id_equipe = 1 AND action = 'Ruck Conservation';
+        """
+    },
+    {
+        "input": "Liste des matches où l’écart de score ≥ 20 points",
+        "query": """
+            SELECT id_match, locaux, visiteurs, score_locaux, score_visiteurs
+            FROM match
+            WHERE ABS(score_locaux - score_visiteurs) >= 20;
+        """
+    },
+    {
+        "input": "Joueurs ayant effectué plus de 40 accélérations (toutes mi-temps confondues)",
+        "query": """
+            SELECT id_joueur, SUM(nb_accel) AS total_accel
+            FROM courir
+            GROUP BY id_joueur
+            HAVING total_accel > 40
+            ORDER BY total_accel DESC
+            LIMIT 50;
+        """
+    },
+    {
+        "input": "Affiche, pour chaque équipe, le ratio essais/transformations réussies",
+        "query": """
+            SELECT e.nom_equipe,
+                   SUM(transformations) / NULLIF(SUM(essais),0) AS ratio
+            FROM score s
+            JOIN equipe e ON e.id_equipe = s.id_equipe
+            GROUP BY e.nom_equipe;
+        """
+    },
+    {
+        "input": "Nombre total de fautes règlementaires commises par équipe",
+        "query": """
+            SELECT id_equipe, SUM(total) AS fautes
+            FROM fin_actions_collectives
+            WHERE action = 'Faute règlement CPP Concédé'
+            GROUP BY id_equipe
+            ORDER BY fautes DESC;
+        """
+    },
+    {
+        "input": "Quels joueurs ont commis une faute de brutalité ?",
+        "query": """
+            SELECT DISTINCT id_joueur
+            FROM export_stat_match
+            WHERE action LIKE 'Faute règlement - Brutalité';
+        """
+    },
+    {
+        "input": "Top 10 des joueurs ayant la plus grande distance/minute (match entier)",
+        "query": """
+            SELECT id_joueur,
+                   ROUND(SUM(distance_totale) / SUM(temps_de_jeu),2) AS dist_par_min
+            FROM courir
+            WHERE periode = 'Match entier'
+            GROUP BY id_joueur
+            ORDER BY dist_par_min DESC
+            LIMIT 10;
+        """
     }
-]
+    ]
 
 
 # 3. Embeddings et sélecteur sémantique
@@ -127,7 +510,7 @@ example_selector = SemanticSimilarityExampleSelector.from_examples(
 # 4. Définition du prompt système incluant {tool_names} et {tools}
 # === DÉBUT DE LA SECTION À REMPLACER ===
 system_prefix = """
-Vous êtes un agent expert en rugby connecté à une base de données MySQL nommée 'aya_application_asbh'.
+Vous êtes un agent expert en rugby connecté à une base de données MySQL nommée 'application_asbh'.
 
 Vous disposez des outils suivants :
 {tool_names}

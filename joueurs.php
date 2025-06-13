@@ -4,6 +4,7 @@ require_once 'db.php';
 require_once 'auth.php';
 $bdd = getBD();
 
+
 // Lecture du filtre passé en GET (valeurs possibles : 'tout', 'actif', 'inactif')
 $filtreActivite = $_GET['filtre_activite'] ?? 'tout';
 $filtreActivite = in_array($filtreActivite, ['actif', 'inactif']) ? $filtreActivite : 'tout';
@@ -575,5 +576,6 @@ function ajouterTag(poste) {
   // Tri initial
   filter();
 </script>
+<script src="js/chat-widget.js" defer></script>
 </body>
 </html>

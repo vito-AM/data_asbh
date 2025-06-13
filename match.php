@@ -215,6 +215,8 @@ if ($id_match && $nom_equipe) {
         fac.id_fin_actions_collectives, 
         fac.total, 
         fac.{$champ_mitemps} as mt, 
+        fac.mt1,
+        fac.mt2,
         fac.action,
         m.id_match, 
         m.locaux, 
@@ -265,6 +267,9 @@ if (!isset($match) && !empty($dataFinAction)) {
 </head>
 <body class="bg-gradient-to-b from-[#1f2355] to-black text-white min-h-screen py-10 font-sans">
 <?php include 'sidebar.php'; ?>
+
+ <div class="flex ml-48">
+    <div class="flex-1 items-center">
 
 <div class="bg-gray-900 text-white max-w-6xl mx-auto p-6 space-y-8 rounded-lg shadow-lg mb-8">
   <div class="text-center text-2xl font-bold">
@@ -659,15 +664,6 @@ new Chart(document.getElementById('barChart'), {
 <div class="bg-gray-900 text-white max-w-6xl mx-auto p-6 mt-10 rounded-lg shadow-lg mb-8">
   <h2>Filtrer les actions</h2>
 
-  <form action="" method="get">
-    <input type="hidden" name="id" value="<?= htmlspecialchars($match['id_match'] ?? '') ?>">
-
-    <label for="mi_temps">Choisir la mi-temps :</label>
-    <select id="mi_temps" name="mi_temps" onchange="updateActions()" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2">
-        <option value="1" <?= (isset($mi_temps) && $mi_temps == 1) ? 'selected' : '' ?>>1ère Mi-temps</option>
-        <option value="2" <?= (isset($mi_temps) && $mi_temps == 2) ? 'selected' : '' ?>>2ème Mi-temps</option>
-    </select>
-
     <label for="nom_equipe">Choisir l'équipe :</label>
     <select id="nom_equipe" name="nom_equipe" onchange="updateActions()" class="bg-gray-800 text-white border border-gray-600 rounded px-3 py-2">
         <option value="<?= htmlspecialchars($match['locaux'] ?? '') ?>" <?= (isset($nom_equipe) && $nom_equipe == ($match['locaux'] ?? '')) ? 'selected' : '' ?>>
@@ -681,13 +677,12 @@ new Chart(document.getElementById('barChart'), {
 
   <script>
   function updateActions() {
-      const miTemps = document.getElementById('mi_temps').value;
       const nomEquipe = document.getElementById('nom_equipe').value;
       const urlParams = new URLSearchParams(window.location.search);
       const idMatch = urlParams.get('id');
 
       if (idMatch && nomEquipe) {
-          window.location.href = `match.php?id=${idMatch}&nom_equipe=${nomEquipe}&mi_temps=${miTemps}`;
+          window.location.href = `match.php?id=${idMatch}&nom_equipe=${nomEquipe}`;
       }
   }
   </script>
@@ -726,8 +721,8 @@ new Chart(document.getElementById('barChart'), {
               $totalMT2 = 0;
               $totalGlobal = 0;
               foreach ($actions as $a) {
-                  if (isset($mi_temps) && $mi_temps == 1) $totalMT1 += $a['mt'];
-                  if (isset($mi_temps) && $mi_temps == 2) $totalMT2 += $a['mt'];
+                  $totalMT1 += $a['mt1'];
+                  $totalMT2 += $a['mt2'];
                   $totalGlobal += $a['total'];
               }
             ?>
