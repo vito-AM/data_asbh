@@ -6,7 +6,9 @@ require_once 'auth.php';
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ASBH – Aide & Crédits</title>
+  <title>DAT'ASBH – Aide & Crédits</title>
+  <link rel="icon" href="images/logo_asbh.png" />
+
   <link rel="icon" type="image/png" href="images/logo_asbh.png" />
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -74,10 +76,8 @@ require_once 'auth.php';
   <ul class="list-disc list-inside text-white/90 space-y-2">
     <li class="flex items-center gap-3">
       Partenaires : 
-      <strong>DELL Technologies</strong>
-      <img src="images/dell.png" alt="Logo DELL" class="h-10">
-      <strong>ASBH</strong>
-      <img src="images/logo_asbh.png" alt="Logo ASBH" class="h-10">
+      <strong>DELL Technologies - ASBH</strong>
+      <img src="images/logo-asbh.png" alt="Logo ASBH" class="h-10">
     </li>
     <li class="flex items-center gap-3">
       Encadrement pédagogique :

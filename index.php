@@ -5,7 +5,9 @@ require_once 'auth.php'; ?>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ASBH – Accueil</title>
+  <title>DAT'ASBH – Accueil</title>
+  <link rel="icon" href="images/logo_asbh.png" />
+
 
   <!-- Tailwind 3 CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -50,10 +52,10 @@ require_once 'auth.php'; ?>
   <main class="h-screen flex items-center justify-center ml-0 md:ml-48">
     <div class="text-center max-w-2xl px-6 space-y-10">
 
-      <!-- titre -->
-      <h1 class="font-title text-6xl uppercase tracking-wide text-white px-6 py-4 rounded-md">
-        DAT'ASBH
-      </h1>
+<h1 class="flex flex-col items-center font-title text-6xl uppercase tracking-wide text-white px-6 py-4 rounded-md">
+  <img src="images/logo_asbh.png" alt="ASBH" class="w-36 h-auto object-contain" />
+  DAT'ASBH
+</h1>
 
       <p class="leading-relaxed text-white">
         Bienvenue sur la plateforme d’analyse des performances de l’équipe Élite Crabos de l’Association Sportive Béziers Hérault ! <br><br>

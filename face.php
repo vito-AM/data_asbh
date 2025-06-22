@@ -90,7 +90,7 @@ if (count(array_unique($ids)) < count($ids)) {
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <title>Comparer les joueurs – ASBH</title>
+  <title>DAT'ASBH - Comparer les joueurs</title>
   <link rel="icon" type="image/png" href="images/logo_asbh.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -110,6 +110,17 @@ if (count(array_unique($ids)) < count($ids)) {
 
 <div class="flex-1 ml-64 flex flex-col">
   <main class="flex-1 w-full max-w-7xl mx-auto p-6 md:p-10">
+    <header class="flex flex-col items-center space-y-3 mb-10">
+  <h1 class="text-3xl md:text-4xl font-bold">Comparer les joueurs</h1>
+
+  <p class="text-sm text-white/80 text-center max-w-xl">
+    Choisissez entre <strong>2&nbsp;et&nbsp;10</strong> joueurs actifs dans le menu déroulant,
+    puis cliquez sur </br><em>« Valider »</em>.  
+    Vous pouvez masquer l’identité d’un joueur avec le bouton
+  </br><em>« Anonymiser »</em> ou revenir aux sélections par défaut grâce
+    au bouton <em>« Réinitialiser »</em>.
+  </p>
+</header>
     <!-- Formulaire -->
     <form method="get" class="bg-white/5 backdrop-blur-md rounded-xl shadow-lg p-6 md:p-8 mb-12">
       <div class="flex flex-col md:flex-row md:items-end gap-6">
@@ -122,7 +133,7 @@ if (count(array_unique($ids)) < count($ids)) {
   <div class="flex gap-3">
     <button type="submit"
             class="bg-primary hover:bg-primaryDark px-6 py-2 rounded-xl font-semibold transition">
-      Mettre à jour
+      Valider
     </button>
 
     <button type="button" onclick="window.location='face.php'"
@@ -152,15 +163,21 @@ if (count(array_unique($ids)) < count($ids)) {
                   <h2 class="text-xl font-bold leading-tight">
                     <?= $j['anonyme'] ? 'Joueur Anonyme' : htmlspecialchars($j['prenom_joueur'] . ' ' . $j['nom_joueur']) ?>
                   </h2>
-                  <p class="text-white text-sm font-medium"><?= htmlspecialchars($j['poste']) ?></p>
+                  <?php if (!$j['anonyme']): ?>
+  <p class="text-white text-sm font-medium"><?= htmlspecialchars($j['poste']) ?></p>
+<?php endif; ?>
+
                 </div>
               </div>
               <!-- Bio -->
-              <ul class="text-sm grid grid-cols-3 gap-24 mb-4">
-  <li><span class="text-gray-300">Âge&nbsp;:</span> <span class="font-semibold"><?= date_diff(date_create($j['date_naissance']), date_create('today'))->y ?> ans</span></li>
-  <li><span class="text-gray-300">Taille&nbsp;:</span> <span class="font-semibold"><?= htmlspecialchars($j['taille_cm']) ?> cm</span></li>
-  <li><span class="text-gray-300">Poids&nbsp;:</span> <span class="font-semibold"><?= htmlspecialchars($j['poids_kg']) ?> kg</span></li>
-</ul>
+              <?php if (!$j['anonyme']): ?>
+  <ul class="text-sm grid grid-cols-3 gap-24 mb-4">
+    <li><span class="text-gray-300">Âge&nbsp;:</span> <span class="font-semibold"><?= date_diff(date_create($j['date_naissance']), date_create('today'))->y ?> ans</span></li>
+    <li><span class="text-gray-300">Taille&nbsp;:</span> <span class="font-semibold"><?= htmlspecialchars($j['taille_cm']) ?> cm</span></li>
+    <li><span class="text-gray-300">Poids&nbsp;:</span> <span class="font-semibold"><?= htmlspecialchars($j['poids_kg']) ?> kg</span></li>
+  </ul>
+<?php endif; ?>
+
               <!-- Stats -->
               <div class="mt-auto bg-black/20 rounded-lg p-4">
                 <h3 class="text-center text-xs font-semibold uppercase tracking-wide text-gray-300 mb-3">Statistiques globales</h3>

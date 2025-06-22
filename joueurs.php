@@ -26,13 +26,16 @@ $sql = "
     j.poste,
     j.poste_secondaire,
     j.activite,
-    i.idp
+    GROUP_CONCAT(i.idp ORDER BY i.idp DESC SEPARATOR ',') AS idps,
+    MAX(i.idp)                                           AS idp_max,
+    ROUND(AVG(i.idp),1)                                   AS idp_avg
   FROM joueur AS j
-  LEFT JOIN idp AS i
-    ON i.id_joueur = j.id_joueur
+  LEFT JOIN idp AS i ON i.id_joueur = j.id_joueur
   $whereSql
+  GROUP BY j.id_joueur
   ORDER BY j.nom_joueur ASC
 ";
+
 
 $result = $bdd->query($sql);
 $current  = basename($_SERVER['PHP_SELF']);
@@ -42,7 +45,8 @@ $current  = basename($_SERVER['PHP_SELF']);
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ASBH – Joueurs</title>
+  <title>DAT'ASBH – Joueurs</title>
+  <link rel="icon" href="images/logo_asbh.png" />
   <!-- Tailwind CDN + thème couleur/police -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -244,21 +248,24 @@ function closeToast() {
 <main class="ml-0 md:ml-48 p-6">
   <section id="grid"
            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 xl:grid-cols-10 gap-2 max-w-7xl mx-auto">
+<?php
+while ($row = $result->fetch(PDO::FETCH_ASSOC)) : 
+    $nomMaj = strtoupper($row['nom_joueur']);
+    $prenom = $row['prenom_joueur'];
+    $poste  = $row['poste'];
+    $poste2 = $row['poste_secondaire'];
+    $activ  = $row['activite'];
 
-<?php while ($row = $result->fetch(PDO::FETCH_ASSOC)) : ?>
-    <?php
-        $nomMaj = strtoupper($row['nom_joueur']);
-        $prenom = $row['prenom_joueur'];
-        $poste  = $row['poste'];
-        $poste2 = $row['poste_secondaire'];
-        $idp    = intval($row['idp']);
-        $activ  = $row['activite']; // 'actif' ou 'inactif'
-        // Cercle IDP
-        $pct    = max(0, min($idp, 100));
-        $bgRing = "conic-gradient(#e4041c {$pct}%, rgba(255,255,255,.15) {$pct}% 100%)";
-        // Badge d’activité : vert si actif, rouge si inactif
-        $badgeClass = $activ === 'actif' ? 'bg-green-400' : 'bg-red-500';
-    ?>
+    /* nouvelles données --------------------------------------------- */
+    $idpList = array_map('intval', explode(',', $row['idps'])); // ex. [85, 82, 70]
+    $idpMax  = intval($row['idp_max']);
+    $idpAvg  = floatval($row['idp_avg']);                        // ex. 85
+    /* cercle = meilleure note (idpMax)                               */
+    $pct     = max(0, min($idpMax, 100));
+    $bgRing  = "conic-gradient(#e4041c {$pct}%, rgba(255,255,255,.15) {$pct}% 100%)";
+    /* badge activité ------------------------------------------------ */
+    $badgeClass = $activ === 'actif' ? 'bg-green-400' : 'bg-red-500';
+?>
     <article
   data-name="<?= strtolower($prenom.' '.$row['nom_joueur']) ?>"
   data-last="<?= strtolower($row['nom_joueur']) ?>"
@@ -292,12 +299,29 @@ function closeToast() {
   </p>
 
   <!-- Cercle IDP -->
-  <div class="relative w-14 h-14 mx-auto mt-2" style="background:<?= $bgRing ?>; border-radius:9999px;">
+   <div class="relative w-14 h-14 mx-auto mt-2" style="background:<?= $bgRing ?>; border-radius:9999px;">
     <span class="absolute inset-0 flex items-center justify-center
-                 text-lg font-extrabold"><?= $idp ?></span>
+                 text-lg font-extrabold"><?= $idpAvg ?></span>
   </div>
-</article>
 
+  <!-- Moyenne sous le cercle -->
+<?php /*
+<!-- Moyenne sous le cercle -->
+<p class="text-[11px] text-gray-300 mt-0.5 italic">
+    Moy : <?= $idpAvg ?>
+</p>
+*/ ?>
+
+
+  <!-- Liste des autres valeurs IDP (petits badges) -->
+  <?php if (count($idpList) > 1): ?>
+    <div class="flex flex-wrap justify-center gap-1 mt-1 text-[10px]">
+      <?php foreach ($idpList as $v): ?>
+        <span class="px-1 bg-white/15 rounded"><?= $v ?></span>
+      <?php endforeach; ?>
+    </div>
+  <?php endif; ?>
+</article>
 <?php endwhile; ?>
 
   </section>
@@ -460,6 +484,12 @@ function ajouterTag(poste) {
       vis.forEach(card => grid.appendChild(card));
     }
   }
+    function onActiviteFilterChange(val) {
+    // Conserve le paramètre existant de recherche, tri, etc., et ajoute filtre_activite
+    const url = new URL(window.location.href);
+    url.searchParams.set('filtre_activite', val);
+    window.location.href = url.toString();
+  }
 
   // Premier affichage
   filter();
@@ -470,112 +500,7 @@ function ajouterTag(poste) {
           transition backdrop-blur-sm z-50">
   + Ajouter joueur
 </a>
-<script>
-  // Fonction déclenchée au changement du filtre d’activité
-  function onActiviteFilterChange(val) {
-    // Conserve le paramètre existant de recherche, tri, etc., et ajoute filtre_activite
-    const url = new URL(window.location.href);
-    url.searchParams.set('filtre_activite', val);
-    window.location.href = url.toString();
-  }
 
-  // Réinitialisation des filtres : recherche, poste, IDP, tri, activité
-  function resetFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('posteSelect').selectedIndex = 0;
-    document.getElementById('ipMin').value = 0;
-    document.getElementById('ipMax').value = 100;
-    document.getElementById('sortPoste').value = 'no';
-    document.getElementById('sortIP').value = 'no';
-    document.getElementById('activiteFilter').value = 'tout';
-    filter();
-  }
-
-  // Reste du code JS pour gestion des filtres côté client (recherche, poste, IDP, tri)
-  // On récupère toutes les cartes
-  const cards  = [...document.querySelectorAll('article[data-name]')];
-  const grid   = document.getElementById('grid');
-  const els    = {
-    search : document.getElementById('searchInput'),
-    poste  : document.getElementById('posteSelect'),
-    ipMin  : document.getElementById('ipMin'),
-    ipMax  : document.getElementById('ipMax'),
-    sortP  : document.getElementById('sortPoste'),
-    sortIP : document.getElementById('sortIP'),
-    activ  : document.getElementById('activiteFilter')
-  };
-  Object.values(els).forEach(el => {
-    if (el) el.addEventListener('input', filter);
-  });
-
-  const alphaLast = (a,b)=>
-    a.dataset.last.localeCompare(b.dataset.last,'fr',{sensitivity:'base'});
-
-  const POSTE_ORDER = [
-    "pilier gauche","talonneur","pilier droit","deuxième ligne",
-    "troisième ligne","demi de mêlée","demi d'ouverture",
-    "centre","ailier","arrière"
-  ];
-
-  function filter() {
-    const q        = els.search.value.trim().toLowerCase();
-    const posteSel = els.poste.value.toLowerCase();
-    const ipMin    = +els.ipMin.value || 0;
-    const ipMax    = +els.ipMax.value || 100;
-    const byPoste  = els.sortP.value === 'yes';
-    const byIP     = els.sortIP.value === 'yes';
-    const activF   = els.activ.value; // 'tout', 'actif', 'inactif'
-
-    let vis = cards.filter(c => {
-      const idp = +c.dataset.idp;
-      const posteCard = c.dataset.poste.toLowerCase();
-      // Filtre poste (si posteSel non vide, sinon tout)
-      const okPoste = (posteSel === '') || (posteCard === posteSel);
-
-      // Filtre activité : on lit l'attribut title du badge pour déduire actif/inactif
-      const badge = c.querySelector('span[title]');
-      let status = 'actif';
-      if (badge && badge.title.includes('Inactif')) status = 'inactif';
-      const okActiv = (activF === 'tout') || (status === activF);
-
-      return c.dataset.name.includes(q)
-          && okPoste
-          && idp >= ipMin && idp <= ipMax
-          && okActiv;
-    });
-
-    grid.innerHTML = '';
-
-    if (byPoste) {
-      const groups = {};
-      vis.forEach(c=>(groups[c.dataset.poste]??=[]).push(c));
-
-      Object.keys(groups)
-        .sort((a,b)=> POSTE_ORDER.indexOf(a) - POSTE_ORDER.indexOf(b))
-        .forEach(g => {
-          const bloc = groups[g];
-          if (byIP) bloc.sort((a,b)=>+b.dataset.idp-+a.dataset.idp);
-          else     bloc.sort(alphaLast);
-
-          const h = document.createElement('h3');
-          h.textContent = g.charAt(0).toUpperCase() + g.slice(1);
-          h.className =
-            "col-span-full flex items-center gap-2 text-white/80 font-normal text-sm mb-2";
-          h.innerHTML = `<span>${h.textContent}</span><hr class="flex-1 border-white/30">`;
-          grid.appendChild(h);
-
-          bloc.forEach(card=>grid.appendChild(card));
-        });
-    } else {
-      if (byIP) vis.sort((a,b)=>+b.dataset.idp-+a.dataset.idp);
-      else     vis.sort(alphaLast);
-      vis.forEach(card=>grid.appendChild(card));
-    }
-  }
-
-  // Tri initial
-  filter();
-</script>
 <script src="js/chat-widget.js" defer></script>
 </body>
 </html>

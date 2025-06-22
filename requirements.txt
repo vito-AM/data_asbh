@@ -1,22 +1,26 @@
-Flask
-Flask-Cors
-PyMySQL
+# --- Framework Web ---
+Flask>=3.0,<4.0
+Flask-Cors>=4.0
+Flask-SQLAlchemy>=3.1
 
-# LangChain + intégration Ollama
-langchain
-langchain-ollama
-langchain-community
+# --- Base de données ---
+PyMySQL>=1.1
+SQLAlchemy>=2.0
 
-# FAISS pour l’index sémantique
-faiss-cpu
+# --- Traitement de données / Excel ---
+pandas>=2.2          # ETL + calculs
+openpyxl>=3.1        # moteur Excel utilisé par pandas
 
-# Embeddings & LLM
-sentence-transformers
-transformers
-torch
+# --- IA & Recherche sémantique ---
+langchain>=0.2
+langchain-ollama>=0.1
+langchain-community>=0.0
+faiss-cpu>=1.7
+sentence-transformers>=2.6
+transformers>=4.42
+torch>=2.3           # version CPU ; laisse-la se charger du bon build
 
-# ETL app.py
-pandas 
-sqlalchemy 
-flask 
-pymysql
+# --- Divers utilitaires ---
+python-dotenv>=1.0   # pour stocker les variables (DB, OLLAMA…) dans un .env
+
+# --- Pin facultatif des versions majeures ---

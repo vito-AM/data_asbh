@@ -10,7 +10,7 @@
   <a href="index.php" class="flex flex-col items-center gap-1 hover:opacity-70 transition">
     <img src="images/logo_asbh.png" alt="ASBH" class="w-20 h-auto object-contain" />
     <span class="text-center text-sm font-semibold leading-tight">
-      Association&nbsp;Sportive<br>de&nbsp;Béziers&nbsp;Hérault
+      DAT'ASBH
     </span>
   </a>
 </div>

@@ -14,13 +14,16 @@ $ASBH_ID = $teamRow ? (int)$teamRow['id_equipe'] : 1;   // fallback 1
 
 /* Récupération des matchs (jointure dim_team pour noms) ---------------------- */
 $sql = "SELECT id_match, date AS date_match, competition, journee, locaux, visiteurs, score_locaux, score_visiteurs FROM `match` ORDER BY date DESC; ";
-$rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!doctype html>
 <html lang="fr">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ASBH – Matchs</title>
+<title>DAT'ASBH – Matchs</title>
+<link rel="icon" href="images/logo_asbh.png" />
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config={theme:{extend:{colors:{primary:'#292E68',primaryDark:'#1f2355',danger:'#A00E0F'},fontFamily:{sans:['Inter'],'title':['\"Bebas Neue\"']}}}}
@@ -30,7 +33,7 @@ $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 <body class="bg-gradient-to-br from-[#292E68] via-[#1f2355] to-black text-white font-sans min-h-screen">
 <?php include 'sidebar.php'; ?>
 
-<header class="sticky top-0 z-10 w-full md:ml-48 flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur flex-wrap gap-4">
+<header class="sticky top-0 z-10 w-full md:pl-48 flex items-center justify-between px-4 py-3 bg-black/40 backdrop-blur flex-wrap gap-4">
   <div class="flex flex-wrap items-center gap-3 text-sm">
     <label>Domicile/Ext :
       <select id="domExt" class="text-black rounded p-1">
@@ -52,7 +55,7 @@ $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 </header>
 
 <!-- Container principal centré horizontalement -->
-<main class="md:ml-48 p-6 flex flex-col gap-6 items-center">
+<main class="md:pl-48 p-6 flex flex-col gap-6 items-center">
 <?php foreach($rows as $m):
       $dom = ($m['locaux']==='ASBH');
       $s1  = (int)$m['score_locaux'];

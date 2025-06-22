@@ -141,9 +141,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Import Excel</title>
+  <title>DAT'ASBH - Import Excel</title>
   <link rel="icon" href="images/logo_asbh.png" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <?php include 'tailwind_setup.php'; ?>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script>
     function updateFileName(inputId, labelId) {
@@ -155,8 +156,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   </script>
 </head>
-<body class="bg-gradient-to-br from-[#A00E0F] via-[#5e0000] to-black text-white font-['Inter'] min-h-screen flex">
+<body class="bg-gradient-to-br from-[#292E68] via-[#1f2355] to-black text-white font-sans min-h-screen">
   <?php include 'sidebar.php'; ?>
+
   <?php if (!empty($_SESSION['toast'])): 
     $toast = $_SESSION['toast'];
     $type  = $toast['type']    ?? 'info';
@@ -189,9 +191,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="flex-1 ml-64">
     <header class="flex flex-col items-center space-y-4 py-6">
       <a href="index.php" class="hover:opacity-70 transition">
-        <img src="images/logo_asbh.png" alt="ASBH" class="w-24"/>
       </a>
-      <h1 class="text-2xl font-bold">Importer les données Excel</h1>
+      <h1 class="text-3xl md:text-4xl font-bold">Importer les données Excel</h1>
+      <p class="mt-2 text-sm text-white/80 max-w-md text-center">
+  Sélectionne les trois fichiers .xlsx&nbsp;–&nbsp;<em>Data Match</em>, <em>Export Stats Match </em> et
+  <em>Rapport GPS</em> – puis clique sur « Valider ».  
+  Chaque fichier doit être au format Excel (.xlsx).
+</p>
+
     </header>
 
     <main class="max-w-xl mx-auto bg-white/10 backdrop-blur-md rounded-xl shadow-lg p-8 text-white mt-6">

@@ -60,15 +60,16 @@ $actionRows = $actsStmt->fetchAll(PDO::FETCH_ASSOC);
   <!-- HEADER : titre + score -->
   <header class="flex flex-col md:flex-row md:justify-between md:items-center">
     <h3 class="text-2xl font-bold text-white">
-      <?= htmlspecialchars($row['competition']) ?>
+      <?= htmlspecialchars($row['locaux']) ?>
+      <?= $row['score_locaux'] ?></span>
+      –
+      <?= $row['score_visiteurs'] ?></span>
+      <?= htmlspecialchars($row['visiteurs']) ?>
       <span class="text-base text-gray-400">— <?= date('d M Y', strtotime($row['date'])) ?></span>
     </h3>
     <div class="mt-2 md:mt-0 text-white text-xl font-semibold">
-      <?= htmlspecialchars($row['locaux']) ?>
-      <span class="text-emerald-300"><?= $row['score_locaux'] ?></span>
-      –
-      <span class="text-red-400"><?= $row['score_visiteurs'] ?></span>
-      <?= htmlspecialchars($row['visiteurs']) ?>
+      <?= htmlspecialchars($row['competition']) ?>
+      
     </div>
   </header>
 

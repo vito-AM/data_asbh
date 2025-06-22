@@ -68,7 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ajouter joueur – ASBH</title>
+    <title>DAT'ASBH - Ajouter joueur</title>
+    <link rel="icon" href="images/logo_asbh.png" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {

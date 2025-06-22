@@ -99,20 +99,27 @@ def transpose_and_flatten_partially(file_path, output_path=None):
 
             
 
-        elif i == 1:
-            df = xls.parse(sheet, header=None)
+        elif i == 1:                       # --- Feuilles de match -----------------
+                df = xls.parse(sheet, header=None)
+                df = df.drop(index=[0, 1]).reset_index(drop=True)   # en-têtes inutiles
 
-            
-            # Supprimer les lignes 2 et 3 (index 1 et 2)
-            df = df.drop(index=[0, 1]).reset_index(drop=True)
+                # ⇨ trouver la colonne où commence l’effectif ASBH
+                start_col = next(
+                    (c for c in range(df.shape[1] - 3)              # -3 pour garder un bloc de 4 colonnes
+                    if pd.notna(df.iat[0, c]) and str(df.iat[0, c]).strip().isdigit()),
+                    None
+                )
+                if start_col is None:
+                    raise ValueError("Impossible de localiser les numéros de joueurs dans « Feuilles de match »")
 
-            # Garder uniquement les 4 premières colonnes
-            df = df.iloc[:, :4]
+                # extraire le bloc [n°, nom, prénom, temps]
+                df = df.iloc[:, start_col:start_col + 4]
 
-            # Attribuer manuellement les noms des colonnes
-            df.columns = ["poste", "nom", "prenom", "temps_de_jeu"]
+                # renommage standard
+                df.columns = ["poste", "nom", "prenom", "temps_de_jeu"]
 
-            cleaned_sheets[sheet] = df
+                cleaned_sheets[sheet] = df
+
 
         elif i == 2:
             df = xls.parse(sheet, header=None)

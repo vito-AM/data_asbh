@@ -103,7 +103,8 @@ const radarData   = <?= json_encode(array_values($coeffs)) ?>;
 <html lang="fr">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title><?= htmlspecialchars($player['prenom_joueur'].' '.$player['nom_joueur']) ?> – ASBH</title>
+  <title>DAT'ASBH - <?= htmlspecialchars($player['prenom_joueur'].' '.$player['nom_joueur']) ?></title>
+  <link rel="icon" href="images/logo_asbh.png" />
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -130,27 +131,25 @@ const radarData   = <?= json_encode(array_values($coeffs)) ?>;
   <!-- CARTES INFOS -->
   <div class="grid gap-6 md:grid-cols-3">
     <div class="bg-black/60 border border-white/10 rounded-xl p-6 shadow-lg">
-      <h2 class="text-lg font-semibold text-gray-300 mb-2">Informations</h2>
+      <h2 class="text-lg font-bold text-gray-300 mb-2">Informations</h2>
       <ul class="space-y-1 text-sm text-gray-200">
         <li><strong>Nationalité&nbsp;:</strong> France</li>
         <li><strong>Date de naissance&nbsp;:</strong> <?= htmlspecialchars($player['date_naissance']) ?></li>
+      </ul>
+    </div>
+    <div class="bg-black/60 border border-white/10 rounded-xl p-6 shadow-lg">
+      <h2 class="text-lg font-bold text-gray-300 mb-2">Physique</h2>
+      <ul class="space-y-1 text-sm text-gray-200">
         <li><strong>Taille&nbsp;:</strong> <?= (int)$player['taille_cm'] ?> cm</li>
         <li><strong>Poids&nbsp;:</strong> <?= (int)$player['poids_kg'] ?> kg</li>
       </ul>
     </div>
+
     <div class="bg-black/60 border border-white/10 rounded-xl flex flex-col items-center p-6 shadow-lg">
       <?php $ip = (int)$player['idp']; $pct = max(0,min($ip,100)); ?>
       <div class="relative w-32 h-32" style="background:conic-gradient(#A00E0F <?= $pct ?>%, rgba(255,255,255,.1) <?= $pct ?>% 100%); border-radius:9999px;">
         <span class="absolute inset-0 flex flex-col items-center justify-center font-bold text-3xl"><?= $ip ?><span class="text-xs tracking-wider text-gray-300">IDP</span></span>
       </div>
-    </div>
-    <div class="bg-black/60 border border-white/10 rounded-xl p-6 shadow-lg">
-      <h2 class="text-lg font-semibold text-gray-300 mb-2">Badges</h2>
-      <ul class="space-y-2 text-sm">
-        <li class="flex items-center gap-2"><img src="images/badge_gold.svg" class="w-5"> Contest</li>
-        <li class="flex items-center gap-2"><img src="images/badge_gold.svg" class="w-5"> Casseur de plaquages</li>
-        <li class="flex items-center gap-2"><img src="images/badge_gold.svg" class="w-5"> Soutiens offensifs</li>
-      </ul>
     </div>
   </div>
 

@@ -3,6 +3,12 @@ session_start();
 require_once 'db.php';
 $pdo = getBD();
 
+function canon(string $s): string {
+    // majuscules, pas d’accents, ni espaces parasites
+    $s = iconv('UTF-8', 'ASCII//TRANSLIT', $s);
+    return strtoupper(trim($s));
+}
+
 // 1. Vérification de l'ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die('ID de match invalide.');
@@ -88,7 +94,7 @@ $actionsData = [];
 
 foreach ($pointsParAction as $row) {
     $action = $row['actions'];
-    $equipe = $row['nom_equipe'];
+    $equipe = canon($row['nom_equipe']);
     
     if (!isset($actionsData[$action])) {
         $actionsData[$action] = [];
@@ -204,7 +210,7 @@ foreach ($possessions2 as $row) {
 
 // Récupération sécurisée des valeurs
 $mi_temps = $_GET['mi_temps'] ?? 1;
-$nom_equipe = $_GET['nom_equipe'] ?? null; // en réalité ici c'est nom_equipe
+$nom_equipe = $_GET['nom_equipe'] ?? ($match['locaux'] ?? null);
 $id_match = $_GET['id'] ?? null;
 
 if ($id_match && $nom_equipe) {
@@ -240,6 +246,7 @@ if ($id_match && $nom_equipe) {
 
     $dataFinAction = $stmtFinAction->fetchAll(PDO::FETCH_ASSOC);
 
+
 // On construit $match à partir des données
 if (!isset($match) && !empty($dataFinAction)) {
     $match = [
@@ -252,6 +259,16 @@ if (!isset($match) && !empty($dataFinAction)) {
 
 }
 
+$req = $pdo->prepare('
+    SELECT j.nom_joueur, j.prenom_joueur, j.photo_path, i.poste, i.idp, j.id_joueur
+    FROM idp i
+    JOIN joueur j ON j.id_joueur = i.id_joueur
+    WHERE i.id_match = :id
+    ORDER BY i.idp
+');
+$req->execute(['id' => $id]);
+$joueurs = $req->fetchAll();
+
 
 ?>
 
@@ -260,19 +277,23 @@ if (!isset($match) && !empty($dataFinAction)) {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Détail du match</title>
+  <title>DAT'ASBH - Détail du match</title>
+  <link rel="icon" href="images/logo_asbh.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </head>
 <body class="bg-gradient-to-b from-[#1f2355] to-black text-white min-h-screen py-10 font-sans">
+
 <?php include 'sidebar.php'; ?>
 
  <div class="flex ml-48">
     <div class="flex-1 items-center">
 
 <div class="bg-gray-900 text-white max-w-6xl mx-auto p-6 space-y-8 rounded-lg shadow-lg mb-8">
-  <div class="text-center text-2xl font-bold">
+  <div>
+  <div class="flex flex-col lg:flex-row justify-center gap-12">
+  <div class="text-center text-2xl font-bold mb-4">
     <span class="<?= $match['score_locaux'] > $match['score_visiteurs'] ? 'text-green-400' : ($match['score_locaux'] < $match['score_visiteurs'] ? 'text-red-400' : 'text-yellow-400') ?>">
       <?= h($match['locaux']) ?> <?= $match['score_locaux'] ?>
     </span>
@@ -280,12 +301,70 @@ if (!isset($match) && !empty($dataFinAction)) {
     <span class="<?= $match['score_visiteurs'] > $match['score_locaux'] ? 'text-green-400' : ($match['score_visiteurs'] < $match['score_locaux'] ? 'text-red-400' : 'text-yellow-400') ?>">
       <?= $match['score_visiteurs'] ?> <?= h($match['visiteurs']) ?>
     </span>
-  </div>
-  <div class="text-center text-sm text-gray-300 mt-2 space-y-1">
+    <div class="text-center text-sm text-gray-300 mt-2 space-y-1">
     <p><strong>Compétition :</strong> <?= h($match['competition']) ?></p>
     <p><strong>Journée :</strong> <?= h($match['journee']) ?></p>
     <p><strong>Date :</strong> <?= date('d/m/Y', strtotime($match['date'])) ?></p>
   </div>
+  </div>
+</div>
+  
+  <?php
+
+$positions = [
+    15 => ['top' => 85, 'left' => 50],  // Arrière (bas, centre)
+    14 => ['top' => 75, 'left' => 80],  // Ailier droit
+    13 => ['top' => 65, 'left' => 70],  // Centre droit
+    12 => ['top' => 57.5, 'left' => 57.5],  // Centre gauche
+    11 => ['top' => 65, 'left' => 25],  // Ailier gauche
+    10 => ['top' => 50, 'left' => 50],  // Demi d’ouverture gauche
+    9  => ['top' => 41, 'left' => 37.5],  // Demi de mêlée (milieu)
+    8  => ['top' => 34, 'left' => 50],  // Troisième ligne aile droite
+    7  => ['top' => 34, 'left' => 37.5],  // Troisième ligne centre
+    6  => ['top' => 34, 'left' => 25],  // Troisième ligne aile gauche
+    5  => ['top' => 27, 'left' => 43.75],  // Deuxième ligne droite
+    4  => ['top' => 27, 'left' => 31.25],  // Deuxième ligne gauche
+    3  => ['top' => 20, 'left' => 50],  // Pilier droit
+    2  => ['top' => 20, 'left' => 25],  // Pilier gauche
+    1  => ['top' => 20, 'left' => 37.5],  // Talonneur (haut, centre)
+];
+
+
+?>
+
+<div style="position: relative; max-width: 250px; margin: auto; mt-8">
+  <img src="images/terrain.jpg" alt="Terrain Rugby" style="width: 100%; display: block; border-radius: 8px;" />
+  
+  <?php foreach ($joueurs as $joueur):
+    $pos = $positions[$joueur['poste']] ?? ['top' => 0, 'left' => 0]; ?>
+    
+    <a 
+      href="joueur.php?id=<?= $joueur['id_joueur']; ?>" 
+      style="
+        position: absolute;
+        top: <?= $pos['top'] ?>%;
+        left: <?= $pos['left'] ?>%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 2px solid white;
+        box-shadow: 0 0 5px rgba(0,0,0,0.5);
+      "
+      title="<?= htmlspecialchars($joueur['prenom_joueur'] . ' ' . $joueur['nom_joueur']) ?>"
+    >
+      <img 
+        src="<?= htmlspecialchars($joueur['photo_path']) ?>" 
+        alt="<?= htmlspecialchars($joueur['prenom_joueur'] . ' ' . $joueur['nom_joueur']) ?>"
+        style="width: 100%; height: 100%; object-fit: cover;"
+      />
+  </a>
+    
+  <?php endforeach; ?>
+  </div>
+</div>
 
 </div>
 
@@ -374,8 +453,8 @@ if (!isset($match) && !empty($dataFinAction)) {
           </defs>
         </svg>
         <div class="absolute inset-0 flex flex-col items-center justify-center text-xs text-center">
-          <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
           <span class="text-red-400"><?= h($match['visiteurs']) ?>: <?= $adverse_pct ?>%</span>
+          <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
         </div>
       </div>
     </div>
@@ -414,8 +493,8 @@ if (!isset($match) && !empty($dataFinAction)) {
           </defs>
         </svg>
         <div class="absolute inset-0 flex flex-col items-center justify-center text-xs text-center">
-          <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
           <span class="text-red-400"><?= h($match['visiteurs']) ?>: <?= $adverse_pct ?>%</span>
+          <span class="text-blue-400"><?= h($match['locaux']) ?>: <?= $beziers_pct ?>%</span>
         </div>
       </div>
     </div>
@@ -426,6 +505,7 @@ if (!isset($match) && !empty($dataFinAction)) {
     </div>
 
 </div>
+
 
 <div class="max-w-6xl mx-auto mt-10 mb-8 flex flex-col lg:flex-row gap-6">
   <!-- Bloc Locaux -->
@@ -687,102 +767,110 @@ new Chart(document.getElementById('barChart'), {
   }
   </script>
 
-  <!-- INSERT ICI : le tableau filtré et repliable -->
-  <?php
-  $categoriesPrincipales = ['Mêlée', 'Ruck', 'Faute règlement', 'Touche', 'Maul', 'Coup d\'envoi', 'Plaquage', 'CPP', 'CPF'];
-  $groupedActions = [];
-  foreach ($dataFinAction as $action) {
-      foreach ($categoriesPrincipales as $cat) {
-          if (stripos($action['action'], $cat) === 0) {
-              $groupedActions[$cat][] = $action;
-              break;
-          }
-      }
-  }
-  ?>
+<?php
+// catégories « racines » que tu veux voir apparaître
+$categoriesPrincipales = [
+    'Mêlée', 'Ruck', 'Touche', 'Maul',
+    'Coup d\'envoi', 'Renvoi 22m',
+    'Faute règlement', 'Faute technique',
+    'C P P', 'C P F', 'Plaquage'
+];
 
-  <?php if (!empty($groupedActions)): ?>
-    <div class="mt-6 overflow-x-auto">
-      <h3 class="text-lg font-semibold mb-4">Statistiques des actions (par catégorie) :</h3>
-      <table class="min-w-full table-auto bg-gray-800 text-white rounded-lg overflow-hidden shadow-lg">
-        <thead class="bg-gray-700 text-sm uppercase text-gray-300">
-          <tr>
-            <th class="px-4 py-3 text-left">Catégorie</th>
-            <th class="px-4 py-3 text-center">1ère Mi-temps</th>
-            <th class="px-4 py-3 text-center">2ème Mi-temps</th>
-            <th class="px-4 py-3 text-center">Total</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-600">
 
-          <?php foreach ($groupedActions as $cat => $actions): ?>
-            <?php
-              $totalMT1 = 0;
-              $totalMT2 = 0;
-              $totalGlobal = 0;
-              foreach ($actions as $a) {
-                  $totalMT1 += $a['mt1'];
-                  $totalMT2 += $a['mt2'];
-                  $totalGlobal += $a['total'];
-              }
-            ?>
-            <tr class="hover:bg-gray-700 cursor-pointer transition" onclick="toggleDetails('<?= md5($cat) ?>')">
-              <td class="px-4 py-2 font-semibold"><?= htmlspecialchars($cat) ?></td>
-              <td class="px-4 py-2 text-center"><?= $totalMT1 ?: '-' ?></td>
-              <td class="px-4 py-2 text-center"><?= $totalMT2 ?: '-' ?></td>
-              <td class="px-4 py-2 text-center"><?= $totalGlobal ?></td>
-            </tr>
+$groupedActions = [];
+$groupedActions = [];
+foreach ($dataFinAction as $row) {
+    // on prend le premier mot (ou groupe avant l’espace) du libellé
+    $cat = strtok($row['action'], ' ');
 
-            <tr id="details-<?= md5($cat) ?>" class="hidden bg-gray-700">
-              <td colspan="4" class="px-4 py-2">
-                <ul class="list-disc ml-5 text-sm space-y-1">
-                  <?php foreach ($actions as $detail): ?>
-                    <li>
-                      <strong><?= htmlspecialchars($detail['action']) ?>:</strong>
-                      MT: <?= htmlspecialchars($detail['mt']) ?> |
-                      Total: <?= htmlspecialchars($detail['total']) ?>
-                    </li>
-                  <?php endforeach; ?>
-                </ul>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-
-        </tbody>
-      </table>
-    </div>
-
-    <script>
-    function toggleDetails(id) {
-      const row = document.getElementById('details-' + id);
-      if (row) {
-        row.classList.toggle('hidden');
-      }
+    if (!isset($groupedActions[$cat])) {
+        $groupedActions[$cat] = [
+            'mt1'    => 0,
+            'mt2'    => 0,
+            'total'  => 0,
+            'details'=> []
+        ];
     }
-    </script>
 
-  <?php else: ?>
-    <p class="mt-6 text-gray-400 italic">Aucune action trouvée pour ce filtre.</p>
-  <?php endif; ?>
+    // cumuls
+    $groupedActions[$cat]['mt1']   += (int)$row['mt1'];
+    $groupedActions[$cat]['mt2']   += (int)$row['mt2'];
+    $groupedActions[$cat]['total'] += (int)$row['total'];
+
+    // détail pour la ligne repliable
+    $groupedActions[$cat]['details'][] = $row;
+}
+
+?>
+
+<?php if (!empty($groupedActions)): ?>
+<div class="mt-6 overflow-x-auto">
+  <h3 class="text-lg font-semibold mb-4">
+    Statistiques des actions (par catégorie)
+    <?php if ($mi_temps == 1): ?>– 1ʳᵉ MT<?php elseif ($mi_temps == 2): ?>– 2ᵉ MT<?php else: ?>– Total<?php endif; ?>
+  </h3>
+
+  <table class="min-w-full table-auto bg-gray-800 text-white rounded-lg overflow-hidden shadow-lg">
+    <thead class="bg-gray-700 text-sm uppercase text-gray-300">
+      <tr>
+        <th class="px-4 py-3 text-left">Catégorie</th>
+        <th class="px-4 py-3 text-center">1ère MT</th>
+        <th class="px-4 py-3 text-center">2ème MT</th>
+        <th class="px-4 py-3 text-center">Total</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-600">
+
+<?php foreach ($groupedActions as $cat => $data): ?>
+  <?php $hash = md5($cat); ?>
+  <tr class="hover:bg-gray-700 cursor-pointer transition" onclick="toggleDetails('<?= $hash ?>')">
+    <td class="px-4 py-2 font-semibold"><?= htmlspecialchars($cat) ?></td>
+    <td class="px-4 py-2 text-center"><?= $data['mt1'] ?: '-' ?></td>
+    <td class="px-4 py-2 text-center"><?= $data['mt2'] ?: '-' ?></td>
+    <td class="px-4 py-2 text-center"><?= $data['total'] ?></td>
+  </tr>
+
+  <!-- Détails repliables -->
+  <tr id="details-<?= $hash ?>" class="hidden bg-gray-700">
+    <td colspan="4" class="px-4 py-2">
+      <ul class="list-disc ml-5 text-sm space-y-1">
+        <?php foreach ($data['details'] as $d): ?>
+          <li>
+            <strong><?= htmlspecialchars($d['action']) ?>:</strong>
+            MT1 : <?= $d['mt1'] ?> • MT2 : <?= $d['mt2'] ?> • Total : <?= $d['total'] ?>
+          </li>
+        <?php endforeach; ?>
+      </ul>
+    </td>
+  </tr>
+<?php endforeach; ?>
+
+    </tbody>
+  </table>
 </div>
 
-
-
-
-<?php if (isset($_GET['id']) && is_numeric($_GET['id'])): ?>
-  <div class="text-center mt-4">
-    <a href="match_pdf.php?id=<?= htmlspecialchars($_GET['id']) ?>" class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-      Télécharger en PDF
-    </a>
-  </div>
+<script>
+function toggleDetails(id){
+  const row = document.getElementById('details-' + id);
+  if (row){ row.classList.toggle('hidden'); }
+}
+</script>
+<?php else: ?>
+  <p class="mt-6 text-gray-400 italic">Aucune action trouvée pour ce filtre.</p>
 <?php endif; ?>
 
-
-
 <div class="text-center pt-6">
-  <a href="matchs.php" class="inline-block px-5 py-2 bg-white/80 text-black font-semibold rounded-md hover:bg-white transition">
-    ↩ Liste
+  <a href="joueurs.php" class="fixed bottom-6 right-6 bg-white/20 hover:bg-primary px-4 py-2 rounded-full backdrop-blur-sm">↩ Liste</a>
+  <?php if (isset($match['id_match'])): ?>
+  <!-- Bouton Supprimer -->
+  <a href="match_delete.php?id=<?= urlencode($match['id_match']) ?>"
+     class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700
+            text-white font-semibold py-2 px-4 rounded-md shadow
+            transition duration-150 ease-in-out"
+     onclick="return confirm('Êtes-vous sûr de vouloir SUPPRIMER ce match ? Cette action est irréversible.');">
+      Supprimer le match
   </a>
+<?php endif; ?>
 </div>
 </body>
 

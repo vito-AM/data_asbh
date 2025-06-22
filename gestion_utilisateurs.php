@@ -52,7 +52,8 @@ $users = $pdo->query("SELECT id, username FROM users ORDER BY username ASC")->fe
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Gestion des utilisateurs – ASBH</title>
+  <title>DAT'ASBH - Gestion des utilisateurs</title>
+  <link rel="icon" href="images/logo_asbh.png" />
   <script src="https://cdn.tailwindcss.com"></script>
 <script>
 tailwind.config = {
