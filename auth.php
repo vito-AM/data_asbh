@@ -1,6 +1,6 @@
 <?php
 // auth.php
-session_start();
+// session_start();
 
 // Si l’utilisateur n’est pas connecté, on redirige vers login.php
 if (!isset($_SESSION['user_id'])) {
