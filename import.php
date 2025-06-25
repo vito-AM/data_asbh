@@ -17,8 +17,8 @@ if (!$python) {
         $python = $candidates[0] ?: 'python';
     } else {
         // Unix/macOS : essaie python3 puis python
-        $raw3 = trim(shell_exec('which python3 2>/dev/null'));
-        $raw  = trim(shell_exec('which python 2>/dev/null'));
+        $raw3 = trim(shell_exec('which python3 2>/dev/null') ?? '');
+        $raw  = trim(shell_exec('which python 2>/dev/null') ?? '');
         $c3 = preg_split("/\r\n|\n|\r/", $raw3);
         $c  = preg_split("/\r\n|\n|\r/", $raw);
         if (!empty($c3[0])) {
