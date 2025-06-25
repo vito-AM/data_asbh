@@ -30,7 +30,7 @@ CORS(app)
 try:
     conn = pymysql.connect(
         host="localhost",
-        port=8888,
+        port=8889,
         user="root",
         password="root",
         database="application_asbh",
