@@ -325,8 +325,8 @@ $positions = [
     5  => ['top' => 27, 'left' => 43.75],  // Deuxième ligne droite
     4  => ['top' => 27, 'left' => 31.25],  // Deuxième ligne gauche
     3  => ['top' => 20, 'left' => 50],  // Pilier droit
-    2  => ['top' => 20, 'left' => 25],  // Pilier gauche
-    1  => ['top' => 20, 'left' => 37.5],  // Talonneur (haut, centre)
+    1  => ['top' => 20, 'left' => 25],  // Pilier gauche
+    2  => ['top' => 20, 'left' => 37.5],  // Talonneur (haut, centre)
 ];
 
 
@@ -860,7 +860,7 @@ function toggleDetails(id){
 <?php endif; ?>
 
 <div class="text-center pt-6">
-  <a href="joueurs.php" class="fixed bottom-6 right-6 bg-white/20 hover:bg-primary px-4 py-2 rounded-full backdrop-blur-sm">↩ Liste</a>
+  <a href="matchs.php" class="fixed bottom-6 right-6 bg-white/20 hover:bg-primary px-4 py-2 rounded-full backdrop-blur-sm">↩ Liste</a>
   <?php if (isset($match['id_match'])): ?>
   <!-- Bouton Supprimer -->
   <a href="match_delete.php?id=<?= urlencode($match['id_match']) ?>"

@@ -47,97 +47,844 @@ PONDERATIONS = {
 
 # Barème de contribution par action
 COEFFICIENTS = {
-        "Jeu au pied - Perte du ballon": ("defense", -5),
-        "Jeu au pied - Sortie du ballon": ("spec", 10),
-        "Jeu au pied - Injouable (perte)": ("defense", -3),
-        "Jeu au pied - Positif": ("spec", -3),
-        "Jeu au pied - Négatif": ("engagement", -4),
-        "Perte de balle - Passe manquée": ("discipline", -9),
-        "Perte de balle - En avant": ("discipline", -8),
-        "Perte de balle - Perte du ballon": ("defense", -2),
-        "Perte de balle - Négatif": ("defense", -1),
-        "Faute règlement - Jeu au sol": ("discipline", -3),
-        "Faute règlement - Hors jeu de ligne": ("discipline", -5),
-        "Faute règlement - Brutalité": ("discipline", -6),
-        "Faute règlement - Pénalité": ("discipline", -10),
-        "Faute règlement - CPP Concédé": ("discipline", -9),
-        "Faute règlement - Négatif": ("discipline", -7),
-        "Faute technique - Touche": ("discipline", -5),
-        "Faute technique - Jeu Courant": ("discipline", -4),
-        "Faute technique - En avant": ("discipline", -6),
-        "Faute technique - Mauvaise Passe": ("discipline", -5),
-        "Faute technique - Avantage": ("discipline", -3),
-        "Faute technique - Mêlée": ("discipline", -6),
-        "Faute technique - Conservation": ("discipline", -7),
-        "Faute technique - CPF Concédé": ("discipline", -8),
-        "Faute technique - Négatif": ("discipline", -6),
-        "Points - Essai": ("attaque", 9),
-        "Points - Transformation": ("attaque", 6),
-        "Points - Sortie du ballon": ("attaque", 3),
-        "Points - Marque": ("attaque", 10),
-        "Points - Positif": ("attaque", 5),
-        "Points - Négatif": ("attaque", -5),
-        "Plaquage - Récupérateur": ("defense", 6),
-        "Plaquage - Perte du ballon": ("defense", -4),
-        "Plaquage - CPP Concédé": ("defense", -8),
-        "Plaquage - Mêlée concédée": ("defense", -6),
-        "Plaquage - Sortie du ballon": ("defense", 2),
-        "Plaquage - Positif": ("defense", 3),
-        "Plaquage - Négatif": ("defense", -10),
-        "Plaquage manqué - Négatif": ("defense", -5),
-        "Franchissement - Marque": ("attaque", 8),
-        "Franchissement - Positif": ("attaque", 5),
-        "Récupération - Positif": ("defense", 4),
-        "Assistant - Positif": ("engagement", 3),
-        "Lanceur - Conservation": ("spec", 4),
-        "Lanceur - Perte du ballon": ("spec", -4),
-        "Lanceur - Mêlée concédée": ("spec", -5),
-        "Lanceur - CPF Concédé": ("spec", -6),
-        "Lanceur - Positif": ("spec", 5),
-        "Lanceur - Négatif": ("spec", -5),
-        "Sauteur - Conservation": ("spec", 4),
-        "Sauteur - Perte du ballon": ("spec", -4),
-        "Sauteur - Mêlée concédée": ("spec", -6),
-        "Sauteur - CPF Concédé": ("spec", -5),
-        "Sauteur - Positif": ("spec", 5),
-        "Sauteur - Neutre": ("spec", 0),
-        "Sauteur - Négatif": ("spec", -5),
-        "Contreur - Perte du ballon": ("spec", -4),
-        "Contreur - Positif": ("spec", 6),
-        "Pousseur - Conservation": ("spec", 5),
-        "Pousseur - CPP Concédé": ("spec", -8),
-        "Pousseur - CPP Obtenu": ("spec", 7),
-        "Pousseur - CPF Obtenu": ("spec", 7),
-        "Pousseur - Injouable": ("spec", 2),
-        "Pousseur - Positif": ("spec", 5),
-        "Pousseur - Neutre": ("spec", 0),
-        "Pousseur - Négatif": ("spec", -5),
-        "Soutien Off - Conservation": ("engagement", 3),
-        "Soutien Off - Perte du ballon": ("engagement", -4),
-        "Soutien Off - CPP Concédé": ("engagement", -5),
-        "Soutien Off - CPP Obtenu": ("engagement", 4),
-        "Soutien Off - Positif": ("engagement", 3),
-        "Soutien Off - Neutre": ("engagement", 0),
-        "Soutien Off - Négatif": ("engagement", -3),
-        "Porteur de balle - Conservation": ("engagement", 4),
-        "Porteur de balle - Perte du ballon": ("engagement", -5),
-        "Porteur de balle - CPP Concédé": ("engagement", -6),
-        "Porteur de balle - CPP Obtenu": ("engagement", 5),
-        "Porteur de balle - Positif": ("engagement", 4),
-        "Porteur de balle - Neutre": ("engagement", 0),
-        "Porteur de balle - Négatif": ("engagement", -4),
-        "Passeur - Conservation": ("engagement", 3),
-        "Passeur - CPP Obtenu": ("engagement", 4),
-        "Passeur - Positif": ("engagement", 3),
-        "Contest Air - Gagne": ("defense", 6),
-        "Contest Air - Perdu": ("defense", -4),
-        "Contest Air - Conservation": ("defense", 3),
-        "Contest Air - Perte du ballon": ("defense", -3),
-        "Contest Air - Positif": ("defense", 4),
-        "Contest Air - Négatif": ("defense", -4),
-        "botteur - Conservation": ("spec", 3),
-        "botteur - Perte du ballon": ("spec", -4),
-        "botteur - Positif": ("spec", 4)
+    "1":{
+        # Spécifique mêlée
+        "Mêlées dominantes défensives": ("spec",  +6),
+        "Mêlées dominantes offensives": ("spec",  +5),
+        "Pénalités provoquées en mêlée": ("spec",  +7),
+        "Pénalités concédées en mêlée": ("spec",  -8),
+        "Stabilité (aucune mêlée effondrée)": ("spec",  +3),
+
+        # Défense
+        "Plaquages réussis": ("defense",  3),
+        "Plaquages dominants (offensifs, gagnants)": ("defense",  6),
+        "Plaquages d'arrêt (stop le porteur net)": ("defense",  5),
+        "Plaquages subis (recul de +2m sur impact)": ("defense", -4),
+        "Plaquages manqués": ("defense", -5),
+        "Turnovers gagnés après un plaquage": ("defense",  8),
+        "Actions négatives en défense": ("defense", -10),
+        "Soutien défensif efficace": ("defense",  4),
+        "Soutien défensif inefficace": ("defense", -2),
+        "Soutien défensif inutile": ("defense", -3),
+
+        # Attaque
+        "Portées de balle": ("attaque",  2.5),
+        "Mètres gagnés": ("attaque",  0.5),
+        "Franchissements": ("attaque",  8),
+        "1vs1 gagné": ("attaque",  5),
+        "1vs1 neutre": ("attaque",  2),
+        "1vs1 perdu": ("attaque", -4),
+        "Défenseur battu": ("attaque",  6),
+        "Soutien offensif efficace": ("attaque",  4),
+        "Soutien offensif inefficace": ("attaque",  0),
+        "Soutien offensif inutile": ("attaque", -3),
+        "Passe réussie": ("attaque",  2),
+        "Passe manquée": ("attaque", -3),
+        "Offloads réussis": ("attaque",  6),
+        "Essais marqués": ("attaque", 10),
+        "Pertes de balle": ("attaque", -6),
+
+        # Engagement
+        "Participation aux rucks": ("engagement",  2),
+        "Grattage réussi": ("engagement",  8),
+        "Contest efficace": ("engagement",  4),
+        "Ballon ralenti": ("engagement",  3),
+        "Pénalité sur contest": ("engagement", -6),
+
+        # Discipline
+        "Fautes règlement": ("discipline",  -5),
+        "Pénalités commises": ("discipline",  -8),
+        "Cartons jaunes": ("discipline", -12),
+        "Cartons rouges": ("discipline", -25),
+        "Fautes dans notre camp (50m-22m)": ("discipline",  -8),
+
+        # Initiative
+        "Cad-déb réussi": ("initiative",  2.5),
+        "Jouer un ballon rapidement": ("initiative",  3),
+        "Prise d'initiative positive": ("initiative",  2),
+        "Prise d'initiative neutre": ("initiative",  1.5),
+        "Prise d'initiative négative": ("initiative", -2),
+    },
+    "3":{
+        # Spécifique mêlée
+        "Mêlées dominantes défensives": ("spec", +10),
+        "Mêlées dominantes offensives": ("spec",  +7),
+        "Pénalités provoquées en mêlée": ("spec", +10),
+        "Pénalités concédées en mêlée": ("spec", -10),
+        "Stabilité (aucune mêlée effondrée)": ("spec",  +3),
+
+        # Défense
+        "Plaquages réussis": ("defense",  2.5),
+        "Plaquages dominants (offensifs, gagnants)": ("defense",  7),
+        "Plaquages d'arrêt (stop le porteur net)": ("defense",  6),
+        "Plaquages subis (recul de +2m sur impact)": ("defense", -3),
+        "Plaquages manqués": ("defense", -4),
+        "Turnovers gagnés après un plaquage": ("defense",  7),
+        "Actions négatives en défense": ("defense", -8),
+        "Soutien défensif efficace": ("defense",  3),
+        "Soutien défensif inefficace": ("defense", -2),
+        "Soutien défensif inutile": ("defense", -3),
+
+        # Attaque
+        "Portées de balle": ("attaque",  2),
+        "Mètres gagnés": ("attaque",  0.4),
+        "Franchissements": ("attaque",  6),
+        "1vs1 gagné": ("attaque",  4),
+        "1vs1 neutre": ("attaque",  2),
+        "1vs1 perdu": ("attaque", -3),
+        "Défenseur battu": ("attaque",  5),
+        "Soutien offensif efficace": ("attaque",  3),
+        "Soutien offensif inefficace": ("attaque",  0),
+        "Soutien offensif inutile": ("attaque", -3),
+        "Passe réussie": ("attaque",  1.5),
+        "Passe manquée": ("attaque", -3),
+        "Offloads réussis": ("attaque",  5),
+        "Essais marqués": ("attaque", 10),
+        "Pertes de balle": ("attaque", -5),
+
+        # Engagement
+        "Participation aux rucks": ("engagement",  1.5),
+        "Grattage réussi": ("engagement",  7),
+        "Contest efficace": ("engagement",  3),
+        "Ballon ralenti": ("engagement",  3),
+        "Pénalité sur contest": ("engagement", -5),
+
+        # Discipline
+        "Fautes règlement": ("discipline",  -4),
+        "Pénalités commises": ("discipline",  -7),
+        "Cartons jaunes": ("discipline", -10),
+        "Cartons rouges": ("discipline", -20),
+        "Fautes dans notre camp (50m-22m)": ("discipline",  -7),
+
+        # Initiative
+        "Cad-déb réussi": ("initiative",  2.5),
+        "Jouer un ballon rapidement": ("initiative",  3),
+        "Prise d'initiative positive": ("initiative",  2),
+        "Prise d'initiative neutre": ("initiative",  1.5),
+        "Prise d'initiative négative": ("initiative", -2),
+        },
+    "2":{
+        # Spécifique mêlée / lancer
+        "Mêlées dominantes défensives": ("spec", 4),
+        "Mêlées dominantes offensives": ("spec", 3),
+        "Mêlée volée": ("spec", 6),
+        "1ère ligne écroulée": ("spec", -3),
+        "1ère ligne relevée": ("spec", -3),
+        "Pénalité provoquée en mêlée": ("spec", 5),
+        "Stabilité (aucune mêlée effondrée)": ("spec", 3),
+        "Lancer réussi": ("spec", 5),
+        "Lancer pas droit": ("spec", -6),
+        "Lancer mal réalisé": ("spec", -4),
+
+        # Attaque
+        "Portées de balle": ("attaque", 3),
+        "Mètres franchis": ("attaque", 0.7),
+        "Franchissements": ("attaque", 6),
+        "1vs1 gagné": ("attaque", 4),
+        "1vs1 neutre": ("attaque", 2),
+        "1vs1 perdu": ("attaque", -3),
+        "Défenseur battu": ("attaque", 5),
+        "Soutien offensif efficace": ("attaque", 4),
+        "Soutien offensif inefficace": ("attaque", -2),
+        "Soutien offensif inutile": ("attaque", -4),
+        "Passes réussies": ("attaque", 2),
+        "Passes manquées": ("attaque", -4),
+        "Offloads réussis": ("attaque", 6),
+        "Essais marqués": ("attaque", 10),
+        "Pertes de balle": ("attaque", -7),
+
+        # Défense
+        "Plaquages réussis": ("defense", 3),
+        "Plaquages dominants": ("defense", 5),
+        "Plaquages d'arrêt": ("defense", 4),
+        "Plaquages subis ou ratés": ("defense", -5),
+        "Récupération grâce au plaquage": ("defense", 6),
+        "Soutien défensif efficace": ("defense", 4),
+        "Soutien défensif inefficace": ("defense", -3),
+        "Soutien défensif inutile": ("defense", -5),
+
+        # Engagement physique
+        "Participation aux rucks": ("engagement", 3),
+        "Grattages réussis": ("engagement", 7),
+        "Contest efficace": ("engagement", 6),
+        "Ballon ralenti": ("engagement", 5),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -6),
+        "Fautes techniques": ("discipline", -4),
+        "Cartons jaunes": ("discipline", -12),
+        "Cartons rouges": ("discipline", -25),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative", 3),
+        "Jouer un ballon rapidement": ("initiative", 3.5),
+        "Prise d'initiative positive": ("initiative", 3),
+        "Prise d'initiative neutre": ("initiative", 2),
+        "Prise d'initiative négative": ("initiative", -3),
+        },
+    "4":{
+        # Mêlée & Touche
+        "Mêlées dominantes défensives": ("spec", 4),
+        "Mêlées dominantes offensives": ("spec", 3),
+        "Mêlée volée": ("spec", 5),
+        "Stabilité (aucune mêlée effondrée)": ("spec", 3),
+        "Sauts en touche positifs": ("spec", 4),
+        "Sauts en touche neutres": ("spec", 2),
+        "Sauts en touche négatifs": ("spec", -4),
+        "Contre en touche positif": ("spec", 5),
+        "Contre en touche neutre": ("spec", 2),
+        "Contre en touche négatif": ("spec", -4),
+
+        # Défense
+        "Plaquages réussis": ("defense", 3),
+        "Plaquages dominants": ("defense", 4),
+        "Plaquages d'arrêt": ("defense", 3),
+        "Plaquages subis ou ratés": ("defense", -4),
+        "Récupération grâce au plaquage": ("defense", 6),
+        "Soutien défensif efficace": ("defense", 4),
+        "Soutien défensif inefficace": ("defense", -3),
+        "Soutien défensif inutile": ("defense", -5),
+
+        # Attaque
+        "Portées de balle": ("attaque", 3),
+        "Mètres franchis": ("attaque", 0.5),
+        "Franchissements": ("attaque", 6),
+        "1vs1 gagné": ("attaque", 4),
+        "1vs1 neutre": ("attaque", 2),
+        "1vs1 perdu": ("attaque", -3),
+        "Défenseur battu": ("attaque", 5),
+        "Soutien offensif efficace": ("attaque", 4),
+        "Soutien offensif inefficace": ("attaque", -2),
+        "Soutien offensif inutile": ("attaque", -4),
+        "Passes réussies": ("attaque", 2),
+        "Passes manquées": ("attaque", -4),
+        "Offloads réussis": ("attaque", 6),
+        "Essais marqués": ("attaque", 10),
+        "Pertes de balle": ("attaque", -7),
+
+        # Engagement physique
+        "Participation aux rucks": ("engagement", 2.5),
+        "Grattages réussis": ("engagement", 6),
+        "Contest efficace": ("engagement", 5),
+        "Ballon ralenti": ("engagement", 4),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -5),
+        "Fautes techniques": ("discipline", -4),
+        "Cartons jaunes": ("discipline", -12),
+        "Cartons rouges": ("discipline", -25),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative", 3),
+        "Jouer un ballon rapidement": ("initiative", 3.5),
+        "Prise d'initiative positive": ("initiative", 3),
+        "Prise d'initiative neutre": ("initiative", 2),
+        "Prise d'initiative négative": ("initiative", -3),
+        },
+    "5":{
+        # Mêlée & Touche
+        "Mêlées dominantes défensives": ("spec", 5),
+        "Mêlées dominantes offensives": ("spec", 4),
+        "Mêlée volée": ("spec", 6),
+        "Stabilité (aucune mêlée effondrée)": ("spec", 4),
+        "Sauts en touche positifs": ("spec", 3),
+        "Sauts en touche neutres": ("spec", 2),
+        "Sauts en touche négatifs": ("spec", -3),
+        "Contre en touche positif": ("spec", 6),
+        "Contre en touche neutre": ("spec", 2),
+        "Contre en touche négatif": ("spec", -3),
+
+        # Défense
+        "Plaquages réussis": ("defense", 2.5),
+        "Plaquages dominants": ("defense", 5),
+        "Plaquages d'arrêt": ("defense", 4),
+        "Plaquages subis ou ratés": ("defense", -3),
+        "Récupération grâce au plaquage": ("defense", 7),
+        "Soutien défensif efficace": ("defense", 3),
+        "Soutien défensif inefficace": ("defense", -4),
+        "Soutien défensif inutile": ("defense", -6),
+
+        # Attaque
+        "Portées de balle": ("attaque", 4),
+        "Mètres franchis": ("attaque", 0.3),
+        "Franchissements": ("attaque", 5),
+        "1vs1 gagné": ("attaque", 3),
+        "1vs1 neutre": ("attaque", 3),
+        "1vs1 perdu": ("attaque", -4),
+        "Défenseur battu": ("attaque", 4),
+        "Soutien offensif efficace": ("attaque", 3),
+        "Soutien offensif inefficace": ("attaque", -3),
+        "Soutien offensif inutile": ("attaque", -5),
+        "Passes réussies": ("attaque", 1.5),
+        "Passes manquées": ("attaque", -5),
+        "Offloads réussis": ("attaque", 4),
+        "Essais marqués": ("attaque", 12),
+        "Pertes de balle": ("attaque", -8),
+
+        # Engagement physique
+        "Participation aux rucks": ("engagement", 3),
+        "Grattages réussis": ("engagement", 8),
+        "Contest efficace": ("engagement", 6),
+        "Ballon ralenti": ("engagement", 5),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -6),
+        "Fautes techniques": ("discipline", -5),
+        "Cartons jaunes": ("discipline", -15),
+        "Cartons rouges": ("discipline", -30),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative", 6),
+        "Jouer un ballon rapidement": ("initiative", 7),
+        "Prise d'initiative positive": ("initiative", 6),
+        "Prise d'initiative neutre": ("initiative", 4),
+        "Prise d'initiative négative": ("initiative", -6),
+    },
+    "6":{
+        # Touche
+        "Saut en touche positif": ("spec", 6),
+        "Saut en touche neutre": ("spec", 3),
+        "Saut en touche négatif": ("spec", 1),
+        "Contre en touche positif": ("spec", 7),
+        "Contre en touche neutre": ("spec", 5),
+        "Contre en touche négatif": ("spec", 3),
+        "Participation aux rucks": ("spec", 5),
+        "Grattages réussis": ("spec", 6),
+        "Contest efficace": ("spec", 5),
+        "Ballon ralenti": ("spec", 4),
+
+        # Défense
+        "Plaquages réussis": ("defense", 4),
+        "Plaquages dominants": ("defense", 5),
+        "Plaquages d'arrêt": ("defense", 4),
+        "Plaquages subis ou ratés": ("defense", 2),
+        "Récupération grâce au plaquage": ("defense", 6),
+        "Soutiens défensifs efficaces": ("defense", 5),
+        "Soutiens défensifs inefficaces": ("defense", 3),
+        "Soutiens défensifs inutiles": ("defense", 1),
+
+        # Attaque
+        "Portées de balle": ("attaque", 3),
+        "Mètres franchis": ("attaque", 1),
+        "Franchissement": ("attaque", 5),
+        "1vs1 gagné": ("attaque", 6),
+        "1vs1 neutre": ("attaque", 3),
+        "1vs1 perdu": ("attaque", 1),
+        "Défenseur battu": ("attaque", 5),
+        "Soutiens offensifs efficaces": ("attaque", 5),
+        "Soutiens offensifs inefficaces": ("attaque", 3),
+        "Soutiens offensifs inutiles": ("attaque", 1),
+        "Passe réussie": ("attaque", 3),
+        "Passe manquée": ("attaque", 1),
+        "Offloads réussis": ("attaque", 5),
+        "Essais": ("attaque", 10),
+        "Perte de balle": ("attaque", 2),
+
+        # engagement 
+        "Participation aux rucks": ("engagement", 3),
+        "Grattages réussis": ("engagement", 4),
+        "Contre-ruck réussis": ("engagement", 5),
+
+        # Discipline (- = pénalité)
+        "Fautes règlementaires": ("discipline", -2),
+        "Fautes techniques": ("discipline", -3),
+        "Cartons jaunes": ("discipline", -5),
+        "Cartons rouges": ("discipline", -10),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative", 3),
+        "Jouer un ballon rapidement": ("initiative", 3.5),
+        "Prise d'initiative positive": ("initiative", 3),
+        "Prise d'initiative neutre": ("initiative", 2),
+        "Prise d'initiative négative": ("initiative", -3),
+    },
+    "7":{
+        # Touche
+        "Saut en touche positif": ("spec", 7),
+        "Saut en touche neutre": ("spec", 4),
+        "Saut en touche négatif": ("spec", 2),
+        "Contre en touche positif": ("spec", 8),
+        "Contre en touche neutre": ("spec", 6),
+        "Contre en touche négatif": ("spec", 4),
+        "Participation aux rucks": ("spec", 6),
+        "Grattages réussis": ("spec", 8),
+        "Contest efficace": ("spec", 7),
+        "Ballon ralenti": ("spec", 6),
+
+        # Défense
+        "Plaquages réussis": ("defense", 5),
+        "Plaquages dominants": ("defense", 6),
+        "Plaquages d'arrêt": ("defense", 5),
+        "Plaquages subis ou ratés": ("defense", 3),
+        "Récupération grâce au plaquage": ("defense", 8),
+        "Soutiens défensifs efficaces": ("defense", 6),
+        "Soutiens défensifs inefficaces": ("defense", 4),
+        "Soutiens défensifs inutiles": ("defense", 2),
+
+        # Attaque
+        "Portées de balle": ("attaque", 2.5),
+        "Mètres franchis": ("attaque", 1),
+        "Franchissement": ("attaque", 4),
+        "1vs1 gagné": ("attaque", 5),
+        "1vs1 neutre": ("attaque", 3),
+        "1vs1 perdu": ("attaque", 2),
+        "Défenseur battu": ("attaque", 5),
+        "Soutiens offensifs efficaces": ("attaque", 5),
+        "Soutiens offensifs inefficaces": ("attaque", 3),
+        "Soutiens offensifs inutiles": ("attaque", 2),
+        "Passe réussie": ("attaque", 4),
+        "Passe manquée": ("attaque", 2),
+        "Offloads réussis": ("attaque", 6),
+        "Essais": ("attaque", 8),
+        "Perte de balle": ("attaque", 3),
+
+        # engagement
+        "Participation aux rucks": ("engagement", 3),
+        "Grattages réussis": ("engagement", 5),
+        "Contre-ruck réussis": ("engagement", 6),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -3),
+        "Fautes techniques": ("discipline", -4),
+        "Cartons jaunes": ("discipline", -6),
+        "Cartons rouges": ("discipline", -12),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative", 3),
+        "Jouer un ballon rapidement": ("initiative", 3.5),
+        "Prise d'initiative positive": ("initiative", 3),
+        "Prise d'initiative neutre": ("initiative", 2),
+        "Prise d'initiative négative": ("initiative", -3),
+    },
+    "8":{
+        # Touche
+        "Saut en touche positif": ("spec", 5),
+        "Saut en touche neutre": ("spec", 3),
+        "Saut en touche négatif": ("spec", 1),
+        "Contre en touche positif": ("spec", 6),
+        "Contre en touche neutre": ("spec", 4),
+        "Contre en touche négatif": ("spec", 2),
+        "Participation aux rucks": ("spec", 5),
+        "Grattages réussis": ("spec", 5),
+        "Contest efficace": ("spec", 5),
+        "Ballon ralenti": ("spec", 4),
+
+        # Défense
+        "Plaquages réussis": ("defense", 3),
+        "Plaquages dominants": ("defense", 5),
+        "Plaquages d'arrêt": ("defense", 4),
+        "Plaquages subis ou ratés": ("defense", 2),
+        "Récupération grâce au plaquage": ("defense", 5),
+        "Soutiens défensifs efficaces": ("defense", 4),
+        "Soutiens défensifs inefficaces": ("defense", 3),
+        "Soutiens défensifs inutiles": ("defense", 1),
+
+        # Attaque
+        "Portées de balle": ("attaque", 5),
+        "Mètres franchis": ("attaque", 2),
+        "Franchissement": ("attaque", 7),
+        "1vs1 gagné": ("attaque", 7),
+        "1vs1 neutre": ("attaque", 4),
+        "1vs1 perdu": ("attaque", 2),
+        "Défenseur battu": ("attaque", 6),
+        "Soutiens offensifs efficaces": ("attaque", 6),
+        "Soutiens offensifs inefficaces": ("attaque", 4),
+        "Soutiens offensifs inutiles": ("attaque", 2),
+        "Passe réussie": ("attaque", 5),
+        "Passe manquée": ("attaque", 2),
+        "Offloads réussis": ("attaque", 7),
+        "Essais": ("attaque", 12),
+        "Perte de balle": ("attaque", 3),
+
+        # Ruck / engagement
+        "Participation aux rucks": ("engagement", 3),
+        "Grattages réussis": ("engagement", 4),
+        "Contre-ruck réussis": ("engagement", 5),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -2),
+        "Fautes techniques": ("discipline", -3),
+        "Cartons jaunes": ("discipline", -4),
+        "Cartons rouges": ("discipline", -8),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative", 6),
+        "Jouer un ballon rapidement": ("initiative", 7),
+        "Prise d'initiative positive": ("initiative", 6),
+        "Prise d'initiative neutre": ("initiative", 4),
+        "Prise d'initiative négative": ("initiative", -6),
+},
+    "9":{
+        # Précision & gestion (30 %)
+        "Jeu au pied positif / efficace": ("spec",  6),
+        "Jeu au pied négatif / pas efficace": ("spec", -6),
+        "Passes réussies": ("spec",  2),
+        "Passes manquées": ("spec", -3),
+        "Passes décisives": ("spec",  5),
+
+        # Attaque (20 %)
+        "Portées de balle": ("attaque",  3),
+        "Mètres parcourus": ("attaque",  0.5),
+        "Franchissements": ("attaque",  6),
+        "Prises d'intervalle réussies": ("attaque",  6),
+        "1v1 gagné": ("attaque",  5),
+        "1v1 neutre": ("attaque",  3),
+        "1v1 perdu": ("attaque", -3),
+        "Offloads réussis": ("attaque",  4),
+        "Essais marqués": ("attaque", 10),
+        "Passe réussie": ("attaque",  2),      # singulier (table Attaque)
+        "Passe manquée": ("attaque", -3),      # singulier (table Attaque)
+        "Perte de balle": ("attaque", -6),
+
+        # Défense (20 %)
+        "Plaquages réussis": ("defense",  3),
+        "Plaquages dominants": ("defense",  5),
+        "Plaquages d'arrêt": ("defense",  4),
+        "Plaquages subis ou ratés": ("defense", -5),
+        "Récupération (bon placement défensif en R2)": ("defense",  6),
+        "Mauvais placement défensif": ("defense", -6),
+        "Soutien défensif positif": ("defense",  4),
+        "Soutien défensif négatif": ("defense", -4),
+
+        # Engagement physique (10 %)
+        "Participation aux rucks offensifs": ("engagement",  3),
+        "Participation aux rucks défensifs": ("engagement",  4),
+        "Grattages réussis": ("engagement",  6),
+        "Contest efficace": ("engagement",  5),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline / zones critiques (10 %)
+        "Faute réglementaire": ("discipline", -5),
+        "Faute technique": ("discipline",   -5),
+        "Carton jaune": ("discipline",    -12),
+        "Carton rouge": ("discipline",    -25),
+        "Fautes dans notre camp": ("discipline",  -8),
+
+        # Prise d’initiative (10 %)
+        "Cad-déb réussi": ("initiative",  6),
+        "Jouer un ballon rapidement": ("initiative",  7),
+        "Prise d'initiative positive": ("initiative",  6),
+        "Prise d'initiative neutre": ("initiative",  4),
+        "Prise d'initiative négative": ("initiative", -6),
+    },
+    "10":{
+        # Précision & gestion (30 %)
+        "Jeu au pied positif / efficace": ("spec",  5),
+        "Jeu au pied négatif / inefficace": ("spec", -5),
+        "Pénaltouche trouvée": ("spec",  6),
+        "Pénaltouche non trouvée": ("spec", -6),
+        "Passes réussies": ("spec",  2),
+        "Passes manquées": ("spec", -3),
+        "Passes décisives": ("spec",  5),
+
+        # Attaque (25 %)
+        "Porteur de balle": ("attaque",  3),
+        "Mètres parcourus": ("attaque",  0.5),
+        "Franchissement": ("attaque",  6),
+        "1 vs 1 gagné": ("attaque",  4),
+        "1 vs 1 neutre": ("attaque",  2),
+        "1 vs 1 perdu": ("attaque", -3),
+        "Perte de balle": ("attaque", -6),
+        "Offloads réussis": ("attaque",  6),
+        "Essais": ("attaque", 10),
+        "Passes réussies": ("attaque",  1),
+        "Passes manquées": ("attaque", -4),
+        "Passes décisives": ("attaque",  8),
+
+        # Défense (20 %)
+        "Plaquages réussis": ("defense",  3),
+        "Plaquages dominants": ("defense",  5),
+        "Plaquages d'arrêt": ("defense",  4),
+        "Plaquages subis ou ratés": ("defense", -5),
+        "Récupération (bon placement en R3)": ("defense",  6),
+        "Mauvais placement défensif": ("defense", -6),
+        "Soutien défensif positif": ("defense",  4),
+        "Soutien défensif négatif": ("defense", -4),
+
+        # Engagement physique (10 %)
+        "Participation aux rucks": ("engagement",  2.5),
+        "Grattages réussis": ("engagement",  6),
+        "Contest efficace": ("engagement",  4),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline (15 %)
+        "Fautes réglementaires": ("discipline", -5),
+        "Fautes techniques": ("discipline",   -4),
+        "Cartons jaunes": ("discipline",  -12),
+        "Cartons rouges": ("discipline",  -25),
+        "Fautes dans notre camp": ("discipline",  -8),
+
+        # Prise d’initiative (10 %)
+        "Cad-déb réussi": ("initiative",  6),
+        "Jouer un ballon rapidement": ("initiative",  7),
+        "Prise d'initiative positive": ("initiative",  6),
+        "Prise d'initiative neutre": ("initiative",  4),
+        "Prise d'initiative négative": ("initiative", -6),
+    },
+    "11":{
+        # Jeu au pied & jeu aérien
+        "Jeu au pied efficace": ("spec",  5),
+        "Jeu au pied pas efficace": ("spec", -5),
+        "Contest Air positif": ("spec",  6),
+        "Contest Air neutre": ("spec",  3),
+        "Contest Air négatif": ("spec", -4),
+
+        # Attaque
+        "Portées de balle": ("attaque",  3),
+        "Mètres parcourus": ("attaque",  0.3),
+        "Franchissements": ("attaque",  4),
+        "1vs1 gagné": ("attaque",  5),
+        "1vs1 neutre": ("attaque",  2),
+        "1vs1 perdu": ("attaque", -4),
+        "Défenseur battu": ("attaque",  5),
+        "Offloads réussis": ("attaque",  4),
+        "Passe réussie": ("attaque",  2),
+        "Passe manquée": ("attaque", -3),
+        "Passe décisive": ("attaque",  6),
+        "Essais marqués": ("attaque", 10),
+
+        # Défense
+        "Plaquages réussis": ("defense",  3),
+        "Plaquages dominants": ("defense",  5),
+        "Plaquages d'arrêt": ("defense",  4),
+        "Plaquages subis": ("defense", -3),
+        "Plaquages ratés": ("defense", -4),
+        "Récupération (bon placement défensif)": ("defense",  6),
+        "Soutien défensif positif": ("defense",  4),
+        "Soutien défensif négatif": ("defense", -5),
+        "Mauvais placement défensif": ("defense", -6),
+
+        # Engagement physique
+        "Participation aux rucks": ("engagement",  3),
+        "Grattages réussis": ("engagement",  4),
+        "Contest efficace": ("engagement",  5),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -5),
+        "Fautes techniques": ("discipline", -6),
+        "Cartons jaunes": ("discipline", -12),
+        "Cartons rouges": ("discipline", -25),
+        "Fautes dans notre camp": ("discipline", -8),
+
+        # Prise d’initiative
+        "Cad-déb": ("initiative",  5),
+        "Jouer un ballon rapidement": ("initiative",  6),
+        "Prise d'initiative positive": ("initiative",  6),
+        "Prise d'initiative neutre": ("initiative",  3),
+        "Prise d'initiative négative": ("initiative", -4),
+    },
+    "12":{
+        # Jeu au pied
+        "Jeu au pied efficace": ("spec",  4),
+        "Jeu au pied neutre": ("spec",  2),
+        "Jeu au pied inefficace": ("spec", -3),
+        "Franchissement": ("spec",  3),
+
+
+        # Attaque
+        "Portée de balle": ("attaque",  4),
+        "Mètre parcouru": ("attaque",  0.5),
+        "Franchissement": ("attaque",  5),
+        "1vs1 gagné": ("attaque",  4),
+        "1vs1 neutre": ("attaque",  2),
+        "1vs1 perdu": ("attaque", -2),
+        "Défenseur battu": ("attaque",  3),
+        "Offload réussi": ("attaque",  4),
+        "Passe réussie": ("attaque",  2),
+        "Passe manquée": ("attaque", -3),
+        "Passe décisive": ("attaque",  6),
+        "Essai marqué": ("attaque",  8),
+
+        # Défense
+        "Plaquage réussi": ("defense",  3),
+        "Plaquage dominant": ("defense",  4),
+        "Plaquage d'arrêt": ("defense",  3),
+        "Plaquage subi": ("defense", -3),
+        "Plaquage raté": ("defense", -5),
+        "Récupération de ballon": ("defense",  6),
+        "Soutien défensif positif": ("defense",  3),
+        "Soutien défensif négatif": ("defense", -3),
+
+        # Engagement physique
+        "Participation au ruck": ("engagement",  3),
+        "Grattage réussi": ("engagement",  6),
+        "Contest efficace": ("engagement",  4),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline / zones critiques
+        "Faute réglementaire": ("discipline", -6),
+        "Faute technique": ("discipline", -6),
+        "Carton jaune": ("discipline", -12),
+        "Carton rouge": ("discipline", -25),
+        "Faute dans notre camp": ("discipline", -10),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative",  5),
+        "Jouer un ballon rapidement": ("initiative",  6),
+        "Prise d'initiative positive": ("initiative",  6),
+        "Prise d'initiative neutre": ("initiative",  2),
+        "Prise d'initiative négative": ("initiative", -5),
+    },
+    "13":{
+        # Jeu au pied
+        "Jeu au pied efficace": ("spec",  4),
+        "Jeu au pied neutre": ("spec",  2),
+        "Jeu au pied inefficace": ("spec", -3),
+        "Franchissement": ("spec",  6),
+
+
+        # Attaque
+        "Portée de balle": ("attaque",  4),
+        "Mètre parcouru": ("attaque",  0.4),
+        "Franchissement": ("attaque",  6),
+        "1vs1 gagné": ("attaque",  5),
+        "1vs1 neutre": ("attaque",  2),
+        "1vs1 perdu": ("attaque", -2),
+        "Défenseur battu": ("attaque",  5),
+        "Offload réussi": ("attaque",  3),
+        "Passe réussie": ("attaque",  2),
+        "Passe manquée": ("attaque", -3),
+        "Passe décisive": ("attaque",  6),
+        "Essai marqué": ("attaque",  8),
+
+        # Défense
+        "Plaquage réussi": ("defense",  3),
+        "Plaquage dominant": ("defense",  4),
+        "Plaquage d'arrêt": ("defense",  3),
+        "Plaquage subi": ("defense", -3),
+        "Plaquage raté": ("defense", -5),
+        "Récupération de ballon": ("defense",  6),
+        "Soutien défensif positif": ("defense",  3),
+        "Soutien défensif négatif": ("defense", -3),
+
+        # Engagement physique
+        "Participation au ruck": ("engagement",  3),
+        "Grattage réussi": ("engagement",  5),
+        "Contest efficace": ("engagement",  3),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline / zones critiques
+        "Faute réglementaire": ("discipline", -6),
+        "Faute technique": ("discipline", -6),
+        "Carton jaune": ("discipline", -12),
+        "Carton rouge": ("discipline", -25),
+        "Faute dans notre camp": ("discipline", -10),
+
+        # Prise d’initiative
+        "Cad-déb réussi": ("initiative",  5),
+        "Jouer un ballon rapidement": ("initiative",  6),
+        "Prise d'initiative positive": ("initiative",  6),
+        "Prise d'initiative neutre": ("initiative",  2),
+        "Prise d'initiative négative": ("initiative", -5),
+    },
+    "14":{
+        # Jeu au pied & jeu aérien
+        "Jeu au pied efficace": ("spec",  5),
+        "Jeu au pied pas efficace": ("spec", -5),
+        "Contest Air positif": ("spec",  6),
+        "Contest Air neutre": ("spec",  3),
+        "Contest Air négatif": ("spec", -4),
+
+        # Attaque
+        "Portées de balle": ("attaque",  3),
+        "Mètres parcourus": ("attaque",  0.3),
+        "Franchissements": ("attaque",  4),
+        "1vs1 gagné": ("attaque",  5),
+        "1vs1 neutre": ("attaque",  2),
+        "1vs1 perdu": ("attaque", -4),
+        "Défenseur battu": ("attaque",  5),
+        "Offloads réussis": ("attaque",  4),
+        "Passe réussie": ("attaque",  2),
+        "Passe manquée": ("attaque", -3),
+        "Passe décisive": ("attaque",  6),
+        "Essais marqués": ("attaque", 10),
+
+        # Défense
+        "Plaquages réussis": ("defense",  3),
+        "Plaquages dominants": ("defense",  5),
+        "Plaquages d'arrêt": ("defense",  4),
+        "Plaquages subis": ("defense", -3),
+        "Plaquages ratés": ("defense", -4),
+        "Récupération (bon placement défensif)": ("defense",  6),
+        "Soutien défensif positif": ("defense",  4),
+        "Soutien défensif négatif": ("defense", -5),
+        "Mauvais placement défensif": ("defense", -6),
+
+        # Engagement physique
+        "Participation aux rucks": ("engagement",  3),
+        "Grattages réussis": ("engagement",  4),
+        "Contest efficace": ("engagement",  5),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline
+        "Fautes règlementaires": ("discipline", -5),
+        "Fautes techniques": ("discipline", -6),
+        "Cartons jaunes": ("discipline", -12),
+        "Cartons rouges": ("discipline", -25),
+        "Fautes dans notre camp": ("discipline", -8),
+
+        # Prise d’initiative
+        "Cad-déb": ("initiative",  5),
+        "Jouer un ballon rapidement": ("initiative",  6),
+        "Prise d'initiative positive": ("initiative",  6),
+        "Prise d'initiative neutre": ("initiative",  3),
+        "Prise d'initiative négative": ("initiative", -4),
+    },
+    "15":{
+        # Jeu au pied & relance
+        "Jeu au pied positif": ("spec",  6),
+        "Jeu au pied pas efficace": ("spec", -6),
+        "Relance positive": ("spec",  7),
+        "Relance négative": ("spec", -5),
+        "Contest air positif": ("spec",  4),
+        "Contest air négatif": ("spec", -5),
+        "Récupération (bon placement en R3)": ("spec",  6),
+
+        # Attaque
+        "Portées de balle": ("attaque",  4),
+        "Mètres parcourus": ("attaque",  0.4),
+        "Franchissements": ("attaque",  5),
+        "1vs1 gagné": ("attaque",  5),
+        "1vs1 neutre": ("attaque",  3),
+        "1vs1 perdu": ("attaque", -3),
+        "Défenseur battu": ("attaque",  5),
+        "Offloads réussis": ("attaque",  3),
+        "Passe réussie": ("attaque",  2),
+        "Passe manquée": ("attaque", -2),
+        "Passe décisive": ("attaque",  6),
+        "Essais marqués": ("attaque", 10),
+
+        # Défense
+        "Plaquages réussis": ("defense",  4),
+        "Plaquages dominants": ("defense",  5),
+        "Plaquages d'arrêt": ("defense",  4),
+        "Plaquages subis": ("defense", -3),
+        "Plaquages ratés": ("defense", -3),
+        "Récupération": ("defense",  6),
+        "Soutien défensif positif": ("defense",  5),
+        "Soutien défensif négatif": ("defense", -5),
+
+        # Engagement physique
+        "Participation aux rucks": ("engagement",  3),
+        "Grattages réussis": ("engagement",  4),
+        "Contest efficace": ("engagement",  4),
+        "Ballon ralenti": ("engagement",  3),
+
+        # Discipline / zones critiques
+        "Fautes règlementaires": ("discipline", -6),
+        "Fautes techniques": ("discipline", -5),
+        "Cartons jaunes": ("discipline", -12),
+        "Cartons rouges": ("discipline", -25),
+        "Fautes dans notre camp": ("discipline", -8),
+
+        # Prise d’initiative
+        "Cad-déb": ("initiative",  6),
+        "Jouer un ballon rapidement": ("initiative",  7),
+        "Prise d'initiative positive": ("initiative",  8),
+        "Prise d'initiative neutre": ("initiative",  5),
+        "Prise d'initiative négative": ("initiative", -5),
+    }
 }
 
 # Assure un encodage UTF‑8 dans la console Docker/WSL/Windows
@@ -439,6 +1186,15 @@ def import_excel_to_db(data_match_path: str, stats_path: str, gps_path: str):
 
             print(f"DEBUG: {inserted} stats importées pour le match {id_match}")
 
+            def norm_action(s: str) -> str:
+                return (
+                    s.strip()
+                    .lower()
+                    .replace("é", "e")
+                    .replace("è", "e")
+                    .replace("à", "a")
+    )
+
             # i) Calcul de l’IDP
             for _, pj in effectif_df.iterrows():
                 # récupérer poste et temps de jeu
@@ -465,18 +1221,22 @@ def import_excel_to_db(data_match_path: str, stats_path: str, gps_path: str):
                     "attaque": 0.0, "defense": 0.0, "spec": 0.0,
                     "engagement": 0.0, "discipline": 0.0, "initiative": 0.0
                 }
+                coeffs_poste = COEFFICIENTS.get(str(poste), {})
                 for action, valeur in rows:
-                    if action in COEFFICIENTS:
-                        cat, coef = COEFFICIENTS[action]
+                    if action in coeffs_poste:
+                        cat, coef = coeffs_poste[action]
                         scores_cat[cat] += coef * valeur
+
 
                 # calcul du score brut
                 poids_poste = PONDERATIONS[str(poste)]
-                score_brut = sum(scores_cat[cat] * poids_poste[cat] for cat in scores_cat)
+                score_brut = sum(scores_cat[c] * poids_poste[c] for c in scores_cat)
+                facteur_temps = minutes_jouees / 80 
+                score_brut *= facteur_temps
 
                 # si vous voulez normaliser, définissez score_max (par exemple une constante ou un calcul)
-                score_max = None
-                idp_value = score_brut if score_max is None else score_brut / score_max
+                score_max = 100
+                idp_value = max(0, min(100, 100 * score_brut / score_max))
 
                 # insérer dans idp (la colonne 'details' peut contenir le JSON des scores par catégorie)
                 cur.execute("""
@@ -493,9 +1253,10 @@ def import_excel_to_db(data_match_path: str, stats_path: str, gps_path: str):
             # ───────────────
             # 6) Validation de la transaction
             # ───────────────
-            return id_match, list(MISSING_PLAYERS)
+            
             conn.commit()
             print("✅ Import terminé avec succès.")
+            return id_match, list(MISSING_PLAYERS)
 
         except Exception as e:
             print("❌ Erreur pendant l'import:", e)

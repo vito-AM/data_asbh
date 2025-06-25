@@ -212,8 +212,7 @@ function closeToast() {
       <label class="flex items-center gap-1 w-36">
         Activité :
         <select id="activiteFilter" name="filtre_activite"
-                class="text-black rounded p-1"
-                onchange="onActiviteFilterChange(this.value)">
+                class="text-black rounded p-1">
           <option value="tout"    <?= $filtreActivite === 'tout'    ? 'selected' : '' ?>>Tous</option>
           <option value="actif"   <?= $filtreActivite === 'actif'   ? 'selected' : '' ?>>Actifs</option>
           <option value="inactif" <?= $filtreActivite === 'inactif' ? 'selected' : '' ?>>Inactifs</option>
@@ -258,10 +257,11 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) :
 
     /* nouvelles données --------------------------------------------- */
     $idpList = array_map('intval', explode(',', $row['idps'])); // ex. [85, 82, 70]
+    $idpRecent = array_slice($idpList, 0, 4);
     $idpMax  = intval($row['idp_max']);
     $idpAvg  = floatval($row['idp_avg']);                        // ex. 85
     /* cercle = meilleure note (idpMax)                               */
-    $pct     = max(0, min($idpMax, 100));
+    $pct     = max(0, min($idpAvg, 100));
     $bgRing  = "conic-gradient(#e4041c {$pct}%, rgba(255,255,255,.15) {$pct}% 100%)";
     /* badge activité ------------------------------------------------ */
     $badgeClass = $activ === 'actif' ? 'bg-green-400' : 'bg-red-500';
@@ -270,7 +270,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) :
   data-name="<?= strtolower($prenom.' '.$row['nom_joueur']) ?>"
   data-last="<?= strtolower($row['nom_joueur']) ?>"
   data-poste="<?= strtolower($poste) ?>"
-  data-idp="<?= $idp ?>"
+  data-idp="<?= $idpAvg ?>"
+  data-activ="<?= $activ ?>"
   class="bg-black/30 rounded-xl p-3 text-center text-white shadow
          hover:shadow-lg hover:scale-[1.03] transition cursor-pointer relative"
   onclick="location.href='joueur.php?id=<?= $row['id_joueur'] ?>'">
@@ -314,9 +315,9 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) :
 
 
   <!-- Liste des autres valeurs IDP (petits badges) -->
-  <?php if (count($idpList) > 1): ?>
+  <?php if (count($idpRecent) > 0): ?>
     <div class="flex flex-wrap justify-center gap-1 mt-1 text-[10px]">
-      <?php foreach ($idpList as $v): ?>
+      <?php foreach ($idpRecent as $v): ?>
         <span class="px-1 bg-white/15 rounded"><?= $v ?></span>
       <?php endforeach; ?>
     </div>
@@ -357,6 +358,9 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) :
   els.sortP.addEventListener('input', filter);
   els.sortIP.addEventListener('input', filter);
   els.posteSelect.addEventListener('change', onPosteSelect);
+  els.activite = document.getElementById('activiteFilter');
+  els.activite.addEventListener('change', filter);
+
 
   // Quand on choisit un poste dans le <select>
   function onPosteSelect() {
@@ -435,19 +439,25 @@ function ajouterTag(poste) {
     const ipMax    = +els.ipMax.value || 100;
     const byPoste  = els.sortP.value === 'yes';
     const byIP     = els.sortIP.value === 'yes';
+    const actSel   = els.activite.value;                // 'tout', 'actif', 'inactif'
+
 
     // On filtre d'abord selon recherche, postes sélectionnés et idp
     let vis = cards.filter(c => {
       const idp = +c.dataset.idp;
       const posteCard = c.dataset.poste.toLowerCase();
+      const act   = c.dataset.activ;
 
       // Condition poste : si aucun poste sélectionné, tout passe,
       // sinon on vérifie que le poste de la carte est dans selectedPostes
       const okPoste = (selectedPostes.length === 0)
                     || (selectedPostes.map(p => p.toLowerCase()).includes(posteCard));
 
+      const okActiv = (actSel === 'tout') || (actSel === act);
+
       return c.dataset.name.includes(q)
           && okPoste
+          && okActiv
           && idp >= ipMin && idp <= ipMax;
     });
 
@@ -484,12 +494,11 @@ function ajouterTag(poste) {
       vis.forEach(card => grid.appendChild(card));
     }
   }
-    function onActiviteFilterChange(val) {
-    // Conserve le paramètre existant de recherche, tri, etc., et ajoute filtre_activite
-    const url = new URL(window.location.href);
-    url.searchParams.set('filtre_activite', val);
-    window.location.href = url.toString();
-  }
+   // function onActiviteFilterChange(val) {
+   //    Conserve le paramètre existant de recherche, tri, etc., et ajoute filtre_activite
+   // const url = new URL(window.location.href);
+   // url.searchParams.set('filtre_activite', val);
+   // window.location.href = url.toString();
 
   // Premier affichage
   filter();

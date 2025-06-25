@@ -59,7 +59,7 @@ require_once 'auth.php'; ?>
 
       <p class="leading-relaxed text-white">
         Bienvenue sur la plateforme d’analyse des performances de l’équipe Élite Crabos de l’Association Sportive Béziers Hérault ! <br><br>
-        Accédez aux statistiques détaillées des joueurs, consultez les résultats des matchs, comparez les performances en face-à-face et importez vos propres données au format CSV pour une analyse personnalisée.
+        Accédez aux statistiques détaillées des joueurs, consultez les résultats des matchs, comparez les performances en face-à-face et importez vos propres données pour une analyse personnalisée.
       </p>
 
       <footer class="text-base text-white pt-8">
