@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Script de lancement automatique pour MAMP + Flask + PHP
+# Nom du fichier: launch_app.sh
+
+echo "🚀 Démarrage de l'application..."
+
+# Chemins des applications
+MAMP_APP="/Applications/MAMP/MAMP.app"
+FLASK_SCRIPT="/Applications/MAMP/htdocs/data_asbh-main/app2.py"
+PHP_PAGE="/Applications/MAMP/htdocs/data_asbh-main/index.php"
+
+# 1. Lancer MAMP
+echo "📱 Lancement de MAMP..."
+open "$MAMP_APP"
+
+# Attendre que MAMP démarre (ajustez le délai selon vos besoins)
+echo "⏳ Attente du démarrage de MAMP (10 secondes)..."
+sleep 10
+
+# 2. Lancer le serveur Flask en arrière-plan
+echo "🐍 Lancement du serveur Flask..."
+cd "/Applications/MAMP/htdocs/data_asbh-main"
+
+# Vérifier et installer Flask si nécessaire
+echo "🔍 Vérification de Flask..."
+
+# Fonction pour installer les dépendances Flask
+install_flask_deps() {
+    echo "📦 Installation des dépendances Flask..."
+    
+    # Ajouter le PATH des scripts Python utilisateur
+    export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+    
+    # Installer Flask et flask-cors
+    pip3 install --user flask flask-cors
+    
+    echo "✅ Dépendances installées"
+}
+
+# Tester si Flask et flask-cors sont disponibles
+if ! python3 -c "import flask, flask_cors" 2>/dev/null; then
+    echo "⚠️  Dépendances Flask manquantes, installation en cours..."
+    install_flask_deps
+fi
+
+# S'assurer que le PATH inclut les scripts Python
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+
+# Lancer Flask avec gestion d'erreur
+echo "🚀 Démarrage du serveur Flask..."
+if python3 -c "import flask" 2>/dev/null; then
+    python3 "$FLASK_SCRIPT" &
+    FLASK_PID=$!
+    echo "✅ Serveur Flask démarré (PID: $FLASK_PID)"
+else
+    echo "❌ Impossible de lancer Flask. Vérifiez l'installation."
+    echo "💡 Solution alternative: utilisez l'environnement virtuel"
+    exit 1
+fi
+
+# 3. Attendre un peu puis ouvrir la page PHP dans le navigateur
+echo "⏳ Attente du démarrage du serveur Flask (5 secondes)..."
+sleep 5
+
+echo "🌐 Ouverture de la page principale..."
+# Supposons que MAMP utilise le port par défaut 8888
+open "http://localhost:8888/data_asbh-main/index.php"
+
+echo "✅ Application lancée avec succès!"
+echo "📝 Pour arrêter l'application, fermez MAMP et tuez le processus Flask (PID: $FLASK_PID)"
+
+# Optionnel: garder le script ouvert pour afficher les logs
+echo "💡 Appuyez sur Ctrl+C pour arrêter le serveur Flask"
+wait $FLASK_PID
