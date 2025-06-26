@@ -64,7 +64,7 @@ schema_summary = "\n".join([f"{table}: {', '.join(cols)}" for table, cols in sch
 
 # 1. Chargement du SQLDatabase
 db = SQLDatabase.from_uri(
-    "mysql+pymysql://root:root@localhost:3306/application_asbh",
+    "mysql+pymysql://root:root@localhost:8889/application_asbh",
     sample_rows_in_table_info=3
 )
 
@@ -339,5 +339,5 @@ def chat():
     return jsonify({"reply": final_answer}), 200
 
 if __name__ == "__main__":
-    print(">>> Lancement de Flask sur 0.0.0.0:5000…")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    print(">>> Lancement de Flask sur 0.0.0.0:5001…")
+    app.run(host="0.0.0.0", port=5001, debug=True)
