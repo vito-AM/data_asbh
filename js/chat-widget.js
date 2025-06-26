@@ -1,7 +1,7 @@
 /*  public/js/chat-widget.js  */
 (() => {
   /* ====== Configuration ====== */
-  const API_ENDPOINT      = "http://127.0.0.1:5000/chat";
+  const API_ENDPOINT      = "http://127.0.0.1:5001/chat";
   const SIDEBAR_SELECTOR  = "#sidebar";
   const SPACER_PX         = 16;
   const PANEL_BASE_WIDTH  = 384;              // 24 rem
